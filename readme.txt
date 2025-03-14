@@ -245,4 +245,6 @@ export default Login;
 
 ### **Conclusión**
 
-Usar **Contextos en React** es una excelente manera de manejar roles y permisos en tu aplicación, especialmente cuando tienes múltiples actores (como admin y supervisor) con diferentes niveles de acceso. Este enfoque te permite evitar la duplicación de código, centralizar la lógica y facilitar el mantenimiento.
+Usar **Contextos en React** es una excelente manera de manejar roles y permisos en tu aplicación, 
+especialmente cuando tienes múltiples actores (como admin y supervisor) con diferentes niveles de acceso. 
+Este enfoque te permite evitar la duplicación de código, centralizar la lógica y facilitar el mantenimiento.
