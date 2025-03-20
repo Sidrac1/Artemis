@@ -1,63 +1,75 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, PanResponder } from "react-native";
-import { useNavigation } from "@react-navigation/native";  // Importar useNavigation
+import { View, StyleSheet, PanResponder } from "react-native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import InfoButton from "../components/InfoButton";
+import AlertHistory from "./Access/AlertHistory";
+import AccessesHistory from "./Access/AccessesHistory";
+import ManageDevices from "./Access/ManageDevices";
 
-const Accesses = () => {
-  const navigation = useNavigation(); // Para navegar a otras pantallas
-  const [swipeDirection, setSwipeDirection] = useState('');
+const Stack = createStackNavigator();
 
-  // Crear el PanResponder para detectar el deslizamiento
+const AccessesScreen = () => {
+  const navigation = useNavigation();
+  const [swipeDirection, setSwipeDirection] = useState("");
+
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > 15; // Solo activar si el deslizamiento es suficiente
+      return Math.abs(gestureState.dx) > 15;
     },
     onPanResponderMove: (evt, gestureState) => {
       if (gestureState.dx > 0) {
-        setSwipeDirection('Right');  // Deslizó hacia la derecha
+        setSwipeDirection("Right");
       } else if (gestureState.dx < 0) {
-        setSwipeDirection('Left');  // Deslizó hacia la izquierda
+        setSwipeDirection("Left");
       }
     },
     onPanResponderRelease: (evt, gestureState) => {
-      // Acción dependiendo de la dirección del deslizamiento
       if (gestureState.dx > 100) {
-        // Si el deslizamiento es lo suficientemente largo a la derecha, navega hacia "Patrols"
         navigation.navigate("Patrols");
       } else if (gestureState.dx < -100) {
-        // Si el deslizamiento es lo suficientemente largo a la izquierda, navega hacia "Dashboard"
         navigation.navigate("Dashboard");
       }
-      setSwipeDirection('');
+      setSwipeDirection("");
     },
   });
 
   return (
-    <View
-      style={styles.container}
-      {...panResponder.panHandlers} // Asocia los gestos al contenedor
-    >
+    <View style={styles.container} {...panResponder.panHandlers}>
       <View style={styles.content}>
-        <Text style={styles.text}>Accesses</Text>
+        <InfoButton title="ALERT HISTORY" iconName="exclamation-circle" navigateTo="AlertHistory" />
+        <InfoButton title="ACCESSES HISTORY" iconName="door-open" navigateTo="AccessesHistory" />
+        <InfoButton title="MANAGE DEVICES" iconName="wrench" navigateTo="ManageDevices" />
       </View>
     </View>
+  );
+};
+
+const AccessesNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AccessesMain" component={AccessesScreen} />
+      <Stack.Screen name="AlertHistory" component={AlertHistory} />
+      <Stack.Screen name="AccessesHistory" component={AccessesHistory} />
+      <Stack.Screen name="ManageDevices" component={ManageDevices} />
+    </Stack.Navigator>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#faf9f9",  // Fondo corregido
+    backgroundColor: "#faf9f9",
+    paddingVertical: 20,
   },
   content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#62605c",  // Ajusta el color del texto según tu tema
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    flexWrap: "wrap",
+    marginBottom: 30,
+    marginTop: 160,
   },
 });
 
-export default Accesses;
+export default AccessesNavigator;
