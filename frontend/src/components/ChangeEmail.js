@@ -25,9 +25,9 @@ const ChangeEmail = () => {
     },
     onPanResponderRelease: (evt, gestureState) => {
       if (gestureState.dx > 100) {
-        navigation.navigate("Users");
-      } else if (gestureState.dx < -100) {
         navigation.navigate("Patrols");
+      } else if (gestureState.dx < -100) {
+        navigation.navigate("Dashboard");
       }
       setSwipeDirection("");
     },
@@ -43,7 +43,7 @@ const ChangeEmail = () => {
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <HeaderTitleBox iconName="envelope" text="CHANGE EMAIL" />
+      <HeaderTitleBox iconName="mail" text="CHANGE EMAIL" />
 
       <View style={styles.content}>
         <View style={styles.outerContainer}>
@@ -58,10 +58,10 @@ const ChangeEmail = () => {
                 onChangeText={setEmail}
                 keyboardType="email-address"
               />
-            </View>
+            </View>D
 
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-              <Text style={styles.submitButtonText}>Update</Text>
+              <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -93,9 +93,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: "flex-start", // Cambiado para que el contenido se alinee al inicio
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 30, // Ajusta este valor para subir el contenido
+    marginBottom: 20,
   },
   outerContainer: {
     backgroundColor: "#e6ddcc",
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     borderColor: "black",
   },
   card: {
-    width: width * 0.4,
+    width: width * 0.8,
     padding: 30,
     backgroundColor: "white",
     borderRadius: 10,

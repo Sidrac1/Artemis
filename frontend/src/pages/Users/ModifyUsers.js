@@ -11,10 +11,10 @@ const Stack = createStackNavigator();
 
 const ModifyUsersScreen = ({ navigation }) => {
   const usersData = [
-    { "ID": 123, "NAME": "John", "LAST NAME": "Kennedy", "ROLE": "Supervisor", "RFID": "45327", "EMAIL": "john.kennedy@example.com" },
-    { "ID": 124, "NAME": "Jane", "LAST NAME": "Doe", "ROLE": "Guard", "RFID": "98765", "EMAIL": "jane.doe@example.com" },
-    { "ID": 125, "NAME": "Peter", "LAST NAME": "Parker", "ROLE": "Employee", "RFID": "11223", "EMAIL": "peter.parker@example.com" },
-    { "ID": 126, "NAME": "Mary", "LAST NAME": "Jane", "ROLE": "Supervisor", "RFID": "55667", "EMAIL": "mary.jane@example.com" },
+    { "ID": 123, "NAME": "John", "LAST NAME": "Kennedy", "ROLE": "Supervisor", "RFID": "45327", "EMAIL": "john.kennedy@example.com", "GENDER": "Male", "PHONE": "123-456-7890" },
+    { "ID": 124, "NAME": "Jane", "LAST NAME": "Doe", "ROLE": "Guard", "RFID": "98765", "EMAIL": "jane.doe@example.com", "GENDER": "Female", "PHONE": "987-654-3210" },
+    { "ID": 125, "NAME": "Peter", "LAST NAME": "Parker", "ROLE": "Employee", "RFID": "11223", "EMAIL": "peter.parker@example.com", "GENDER": "Male", "PHONE": "555-123-4567" },
+    { "ID": 126, "NAME": "Mary", "LAST NAME": "Jane", "ROLE": "Supervisor", "RFID": "55667", "EMAIL": "mary.jane@example.com", "GENDER": "Female", "PHONE": "111-222-3333" },
   ];
 
   return (
@@ -41,7 +41,6 @@ const ModifyUsers = () => {
       <Stack.Screen
         name="UserDetails"
         component={UserDetails}
-        // No need to pass initialParams here, DataTable will handle it
       />
     </Stack.Navigator>
   );

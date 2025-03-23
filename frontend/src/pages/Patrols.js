@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; // Importa useState
 import { View, StyleSheet, PanResponder } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
@@ -8,31 +8,29 @@ import InfoButton from "../components/InfoButton";
 import CreatePatrol from "./Patrols/CreatePatrol";
 import ActivePatrols from "./Patrols/ActivePatrols";
 import PatrolReports from "./Patrols/PatrolReports";
+import CreateRoute from "./Patrols/CreateRoute";
 
 // Definir el Stack
 const Stack = createStackNavigator();
 
 const PatrolsScreen = () => {
-  const navigation = useNavigation(); // Para navegar a otras pantallas
-  const [swipeDirection, setSwipeDirection] = useState('');
+  const navigation = useNavigation();
+  const [swipeDirection, setSwipeDirection] = useState(""); // Ahora useState está definido
 
-  // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > 15; // Solo activar si el deslizamiento es suficiente
+      return Math.abs(gestureState.dx) > 15;
     },
     onPanResponderMove: (evt, gestureState) => {
       if (gestureState.dx < 0) {
-        setSwipeDirection('Left');  // Deslizó hacia la izquierda
+        setSwipeDirection("Left");
       }
     },
     onPanResponderRelease: (evt, gestureState) => {
-      // Acción dependiendo de la dirección del deslizamiento
       if (gestureState.dx < -100) {
-        // Si el deslizamiento es lo suficientemente largo a la izquierda, navega hacia "Accesses"
         navigation.navigate("Accesses");
       }
-      setSwipeDirection('');
+      setSwipeDirection("");
     },
   });
 
@@ -54,6 +52,7 @@ const Patrols = () => {
       <Stack.Screen name="ActivePatrols" component={ActivePatrols} />
       <Stack.Screen name="CreatePatrol" component={CreatePatrol} />
       <Stack.Screen name="PatrolReports" component={PatrolReports} />
+      <Stack.Screen name="CreateRoute" component={CreateRoute} />
     </Stack.Navigator>
   );
 };

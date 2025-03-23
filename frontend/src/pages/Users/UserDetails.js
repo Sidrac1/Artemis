@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, Text, TouchableOpacity, Dimensions, TextInput } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import HeaderTitleBox from "../../components/HeaderTitleBox";
@@ -9,19 +9,25 @@ const { width, height } = Dimensions.get("window");
 const UserDetails = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const userData = route.params; // Get user data passed from DataTable
+  const userData = route.params;
+  const [formData, setFormData] = useState(userData);
 
   useEffect(() => {
-    // Log the received data for debugging
-    console.log("UserDetails - route.params:", route.params);
+    setFormData(route.params);
   }, [route.params]);
+
+  const handleChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = () => {
+    console.log("Form Data to Update:", formData);
+    // Aquí puedes agregar la lógica para enviar los datos actualizados a tu API
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
@@ -29,27 +35,94 @@ const UserDetails = () => {
       <HeaderTitleBox iconName="address-card" text="USER DETAILS" />
 
       <View style={styles.content}>
-        <Text style={styles.titleText}>User Details</Text>
+        {formData && (
+          <View style={styles.cardContainer}>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Role:</Text>
+              <TextInput
+                style={styles.formInputDisabled}
+                value={formData.ROLE}
+                editable={false}
+                pointerEvents="none"
+              />
+            </View>
 
-        {userData && (
-          <View style={styles.detailContainer}>
-            <Text style={styles.detailLabel}>ID:</Text>
-            <Text style={styles.detailText}>{userData.ID}</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Name:</Text>
+              <TextInput
+                style={styles.formInputDisabled}
+                value={formData.NAME}
+                editable={false}
+                pointerEvents="none"
+              />
+            </View>
 
-            <Text style={styles.detailLabel}>Name:</Text>
-            <Text style={styles.detailText}>{userData.NAME}</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Last Name:</Text>
+              <TextInput
+                style={styles.formInputDisabled}
+                value={formData["LAST NAME"]}
+                editable={false}
+                pointerEvents="none"
+              />
+            </View>
 
-            <Text style={styles.detailLabel}>Last Name:</Text>
-            <Text style={styles.detailText}>{userData["LAST NAME"]}</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Gender:</Text>
+              <TextInput
+                style={styles.formInputDisabled}
+                value={formData.GENDER}
+                editable={false}
+                pointerEvents="none"
+              />
+            </View>
 
-            <Text style={styles.detailLabel}>Role:</Text>
-            <Text style={styles.detailText}>{userData.ROLE}</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>RFID:</Text>
+              <TextInput
+                style={styles.formInputDisabled}
+                value={formData.RFID}
+                editable={false}
+                pointerEvents="none"
+              />
+            </View>
 
-            <Text style={styles.detailLabel}>RFID:</Text>
-            <Text style={styles.detailText}>{userData.RFID}</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.formLabel}>Phone:</Text>
+              <TextInput
+                style={styles.formInput}
+                value={formData.PHONE}
+                onChangeText={(text) => handleChange("PHONE", text)}
+                keyboardType="phone-pad"
+              />
+            </View>
 
-            <Text style={styles.detailLabel}>Email:</Text>
-            <Text style={styles.detailText}>{userData.EMAIL}</Text>
+            {formData.ROLE === "Supervisor" && (
+              <>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Email:</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={formData.EMAIL}
+                    onChangeText={(text) => handleChange("EMAIL", text)}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Password:</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    value={formData.PASSWORD}
+                    onChangeText={(text) => handleChange("PASSWORD", text)}
+                    secureTextEntry
+                  />
+                </View>
+              </>
+            )}
+
+            <TouchableOpacity style={styles.updateButton} onPress={handleSubmit}>
+              <Text style={styles.updateButtonText}>UPDATE</Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
@@ -60,8 +133,9 @@ const UserDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#faf9f9",
-    paddingVertical: 20,
+    backgroundColor: "#f8f8f8",
+    paddingTop: 20,
+    alignItems: 'center',
   },
   backButton: {
     flexDirection: "row",
@@ -83,25 +157,86 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    flex: 1,
+    padding: 15,
+    backgroundColor: '#e6ddcc',
+    borderRadius: 15,
+    margin: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 3,
+    borderColor: 'black',
+    maxWidth: 500,
+    width: '90%',
+    alignSelf: 'center',
   },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
+  cardContainer: {
+    width: "90%",
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 3,
+    borderColor: 'black',
+    boxSizing: 'border-box',
+    alignSelf: 'center',
   },
-  detailContainer: {
-    width: width * 0.8,
-    alignItems: "flex-start",
+  formGroup: {
+    marginBottom: 10,
+    width: "100%",
   },
-  detailLabel: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 10,
-  },
-  detailText: {
+  formLabel: {
     fontSize: 16,
-    marginTop: 5,
+    fontWeight: "bold",
+    color: 'black',
+    marginBottom: 3,
+  },
+  formInput: {
+    height: 35,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    fontSize: 14,
+    backgroundColor: '#f9f9f9',
+    width: "100%",
+  },
+  formInputDisabled: {
+    height: 35,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    fontSize: 14,
+    backgroundColor: '#e0e0e0',
+    color: '#888',
+    width: "100%",
+  },
+  updateButton: {
+    backgroundColor: '#e6ddcc',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginTop: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: 'black',
+  },
+  updateButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
   },
 });
 
