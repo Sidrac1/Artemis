@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, CheckBox } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native'; // Importamos useNavigation
 
 const { width, height } = Dimensions.get('window');
 
 const RouteForm = ({ onSubmit }) => {
+  const navigation = useNavigation(); // Inicializamos navigation
   const [routeName, setRouteName] = useState('');
   const [frequency, setFrequency] = useState('15 Minutes');
   const [startDate, setStartDate] = useState('12/03/2025 - 22:00');
@@ -40,6 +42,7 @@ const RouteForm = ({ onSubmit }) => {
       endDate,
       selectedSectors: sectorOrder,
     });
+    navigation.navigate('Patrols'); // Navegamos a la página 'Patrols'
   };
 
   return (
@@ -178,19 +181,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   topLeft: {
-    bottom: '1%',
-    left: '52%',
+    bottom: '0%',
+    left: '50%',
   },
   topRight: {
-    top: '24%',
+    top: '22%',
     left: "12%",
   },
   bottomLeft: {
-    top: '3%',
+    top: '2%',
     right: '40%',
   },
   bottomRight: {
-    right: '14%',
+    right: '12%',
     top: '28%',
   },
   sectorName: {

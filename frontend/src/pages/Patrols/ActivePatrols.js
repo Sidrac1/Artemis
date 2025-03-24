@@ -1,26 +1,26 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
-import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
+import { View, StyleSheet, PanResponder, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import ActivePatrolCard from "../../components/ActivePatrolCard";
+import HeaderTitleBox from "../../components/HeaderTitleBox";
 
 const ActivePatrols = () => {
-  const navigation = useNavigation(); // Para navegar a otras pantallas
+  const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState("");
 
-  // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > 15; // Solo activar si el deslizamiento es suficiente
+      return Math.abs(gestureState.dx) > 15;
     },
     onPanResponderMove: (evt, gestureState) => {
       if (gestureState.dx > 0) {
-        setSwipeDirection("Right"); // Deslizó hacia la derecha
+        setSwipeDirection("Right");
       } else if (gestureState.dx < 0) {
-        setSwipeDirection("Left"); // Deslizó hacia la izquierda
+        setSwipeDirection("Left");
       }
     },
     onPanResponderRelease: (evt, gestureState) => {
-      // Acción dependiendo de la dirección del deslizamiento
       if (gestureState.dx > 100) {
         navigation.navigate("Patrols");
       } else if (gestureState.dx < -100) {
@@ -30,19 +30,47 @@ const ActivePatrols = () => {
     },
   });
 
+  const patrolDataArray = [
+    {
+      routeName: "Wareground",
+      guardName: "Anniston Rewler",
+      startDate: "12/03/2025 - 22:00",
+      endDate: "13/03/2025 - 06:00",
+      sectors: "Sector A -> Sector B -> Sector C",
+      frequency: "1 Hour",
+    },
+    {
+      routeName: "Building A",
+      guardName: "John Doe",
+      startDate: "12/03/2025 - 22:00",
+      endDate: "13/03/2025 - 06:00",
+      sectors: "Sector D -> Sector E -> Sector F",
+      frequency: "2 Hour",
+    },
+    {
+      routeName: "Building B",
+      guardName: "Jane Smith",
+      startDate: "12/03/2025 - 22:00",
+      endDate: "13/03/2025 - 06:00",
+      sectors: "Sector G -> Sector H -> Sector I",
+      frequency: "3 Hour",
+    },
+  ];
+
   return (
-    <View
-      style={styles.container}
-      {...panResponder.panHandlers} // Asocia los gestos al contenedor
-    >
-      {/* Botón de retroceso */}
+    <View style={styles.container} {...panResponder.panHandlers}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.backText}>Active Patrols </Text>
+        <HeaderTitleBox iconName="wifi" text="Active Patrols" />
+        <ScrollView>
+          {patrolDataArray.map((patrol, index) => (
+            <ActivePatrolCard key={index} patrolData={patrol} />
+          ))}
+        </ScrollView>
       </View>
     </View>
   );
@@ -52,17 +80,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#faf9f9",
-    paddingVertical: 20,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
     position: "absolute",
-    top: 20, // Ajustar según sea necesario
+    top: 20,
     left: 20,
     backgroundColor: "#ddd",
     borderRadius: 8,
+    zIndex: 1000,
   },
   backText: {
     marginLeft: 5,
@@ -70,11 +98,9 @@ const styles = StyleSheet.create({
     color: "black",
   },
   content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly", 
-    flexWrap: "wrap", 
-    marginBottom: 30,
-    marginTop: 160,
+    flex: 1,
+    alignItems: "center",
+    paddingHorizontal: 20,
   },
 });
 
