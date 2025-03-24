@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
 import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
+import HeaderTitleBox from "../../components/HeaderTitleBox";
+import TableNoTitle from "../../components/TableNoTitle";
 
 const AccessesHistory = () => {
   const navigation = useNavigation(); // Para navegar a otras pantallas
@@ -41,40 +43,70 @@ const AccessesHistory = () => {
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.backText}>Accesses History</Text>
+      <View style={styles.container}>
+        <HeaderTitleBox iconName="door-open" text="ACCESSES HISTORY" />
+        <TableNoTitle data={AccesesHistory} />
       </View>
     </View>
   );
 };
 
+const AccesesHistory = [
+  {
+    area: "Tool Room",
+    date: "03/06/2025",
+    time: "14:25",
+    name: "Erick Alvarez",
+    role: "Supervisor",
+    rfid: "45482",
+  },
+  {
+    area: "Servers Room",
+    date: "06/07/2025",
+    time: "14:25",
+    name: "Erick Alvarez",
+    role: "Employees",
+    rfid: "45482",
+  },
+  {
+    area: "Meeting Room",
+    date: "04/05/2025",
+    time: "14:25",
+    name: "Angel Gameros",
+    role: "Employees",
+    rfid: "45482",
+  },
+  {
+    area: "QC Room",
+    date: "14/07/2025",
+    time: "14:25",
+    name: "Manuel Osuna",
+    role: "Supervisor",
+    rfid: "45482",
+  },
+];
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#faf9f9",
-    paddingVertical: 20,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
     position: "absolute",
-    top: 20, // Ajustar según sea necesario
+    top: 20,
     left: 20,
     backgroundColor: "#ddd",
     borderRadius: 8,
+    zIndex: 100,
   },
   backText: {
     marginLeft: 5,
     fontSize: 16,
     color: "black",
-  },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly", 
-    flexWrap: "wrap", 
-    marginBottom: 30,
-    marginTop: 160,
   },
 });
 

@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
 import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
+import HeaderTitleBox from "../../components/HeaderTitleBox";
+import TableNoTitle from "../../components/TableNoTitle";
 
 const AlertHistory = () => {
   const navigation = useNavigation(); // Para navegar a otras pantallas
@@ -36,45 +44,117 @@ const AlertHistory = () => {
       {...panResponder.panHandlers} // Asocia los gestos al contenedor
     >
       {/* Botón de retroceso */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Text style={styles.backText}>Alert History</Text>
+        <HeaderTitleBox iconName="exclamation-circle" text="ALERT HISTORY" />
+        <TableNoTitle data={Alert} />
       </View>
     </View>
   );
 };
 
+const Alert = [
+  {
+    area: "Warehouse",
+    date: "03/06/2025",
+    time: "14:25",
+    description: "Attempted entry without valid credentials.",
+  },
+  {
+    area: "Warehouse",
+    date: "03/06/2025",
+    time: "22:25",
+    description: "Attempted entry without valid credentials.",
+  },
+  {
+    area: "Warehouse",
+    date: "03/06/2025",
+    time: "18:25",
+    description: "Attempted entry without valid credentials.",
+  },
+  {
+    area: "Warehouse",
+    date: "03/06/2025",
+    time: "08:25",
+    description: "Attempted entry without valid credentials.",
+  },
+  {
+    area: "Parking Lot",
+    date: "04/06/2025",
+    time: "10:30",
+    description: "Unauthorized movement detected.",
+  },
+  {
+    area: "Main Office",
+    date: "05/06/2025",
+    time: "13:45",
+    description: "Failed fingerprint scan attempt.",
+  },
+  {
+    area: "Reception",
+    date: "06/06/2025",
+    time: "09:15",
+    description: "Door opened outside of schedule.",
+  },
+  {
+    area: "Tool Room",
+    date: "07/06/2025",
+    time: "17:50",
+    description: "Attempted access with invalid RFID card.",
+  },
+  {
+    area: "Garage",
+    date: "08/06/2025",
+    time: "21:30",
+    description: "Unrecognized vehicle entry detected.",
+  },
+  {
+    area: "Server Room",
+    date: "09/06/2025",
+    time: "11:25",
+    description: "Unauthorized file access attempt.",
+  },
+  {
+    area: "Meeting Room",
+    date: "10/06/2025",
+    time: "16:45",
+    description: "Unauthorized entry during restricted hours.",
+  },
+  {
+    area: "Security Room",
+    date: "11/06/2025",
+    time: "19:00",
+    description: "Security camera tampering detected.",
+  },
+];
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#faf9f9",
-    paddingVertical: 20,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
     position: "absolute",
-    top: 20, // Ajustar según sea necesario
+    top: 20,
     left: 20,
     backgroundColor: "#ddd",
     borderRadius: 8,
+    zIndex: 100,
   },
   backText: {
     marginLeft: 5,
     fontSize: 16,
     color: "black",
-  },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly", 
-    flexWrap: "wrap", 
-    marginBottom: 30,
-    marginTop: 160,
   },
 });
 
