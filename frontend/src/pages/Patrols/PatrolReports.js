@@ -32,7 +32,7 @@ const PatrolReports = () => {
   const patrolReportsData = [
     {
       ID: 123,
-      NAME: "Nighttime in Warehouse",
+      NAME: "Paco",
       DATE: "16/03/2025",
     },
     {
@@ -63,7 +63,7 @@ const PatrolReports = () => {
         <DataTable
           data={patrolReportsData}
           navigation={navigation}
-          navigateTo="PatrolReportDetails" // Nombre de la ruta para los detalles
+          navigateTo="ReportDetails" // Nombre de la ruta para ReportDetails.js
           idKey="ID"
         />
       </View>

@@ -9,13 +9,15 @@ import CreatePatrol from "./Patrols/CreatePatrol";
 import ActivePatrols from "./Patrols/ActivePatrols";
 import PatrolReports from "./Patrols/PatrolReports";
 import CreateRoute from "./Patrols/CreateRoute";
+import ReportDetails from "./Patrols/ReportDetails"; 
+
 
 // Definir el Stack
 const Stack = createStackNavigator();
 
 const PatrolsScreen = () => {
   const navigation = useNavigation();
-  const [swipeDirection, setSwipeDirection] = useState(""); // Ahora useState está definido
+  const [swipeDirection, setSwipeDirection] = useState(""); 
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -53,6 +55,7 @@ const Patrols = () => {
       <Stack.Screen name="CreatePatrol" component={CreatePatrol} />
       <Stack.Screen name="PatrolReports" component={PatrolReports} />
       <Stack.Screen name="CreateRoute" component={CreateRoute} />
+      <Stack.Screen name="ReportDetails" component={ReportDetails} />
     </Stack.Navigator>
   );
 };
