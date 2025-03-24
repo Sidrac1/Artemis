@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Image, CheckBox } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const { width, height } = Dimensions.get('window');
@@ -9,6 +9,28 @@ const RouteForm = ({ onSubmit }) => {
   const [frequency, setFrequency] = useState('15 Minutes');
   const [startDate, setStartDate] = useState('12/03/2025 - 22:00');
   const [endDate, setEndDate] = useState('13/03/2025 - 06:00');
+  const [selectedSectors, setSelectedSectors] = useState({});
+  const [sectorOrder, setSectorOrder] = useState([]);
+  const [sectorInput, setSectorInput] = useState('');
+
+  const sectors = ['Sector A', 'Sector B', 'Sector C', 'Sector D'];
+
+  const toggleSector = (sector) => {
+    const isSelected = selectedSectors[sector];
+    if (isSelected) {
+      setSelectedSectors({ ...selectedSectors, [sector]: false });
+      setSectorOrder(sectorOrder.filter((s) => s !== sector));
+    } else {
+      setSelectedSectors({ ...selectedSectors, [sector]: true });
+      setSectorOrder([...sectorOrder, sector]);
+    }
+    updateSectorInput();
+  };
+
+  const updateSectorInput = () => {
+    const newInput = sectorOrder.join(' -> ');
+    setSectorInput(newInput);
+  };
 
   const handleSubmit = () => {
     onSubmit({
@@ -16,6 +38,7 @@ const RouteForm = ({ onSubmit }) => {
       frequency,
       startDate,
       endDate,
+      selectedSectors: sectorOrder,
     });
   };
 
@@ -37,13 +60,36 @@ const RouteForm = ({ onSubmit }) => {
               style={styles.houseImage}
               resizeMode="contain"
             />
-            <View style={styles.sectorLabelContainer}>
-              <Text style={[styles.sectorLabel, { top: '30%', left: '5%' }]}>2 {'\n'}B</Text>
-              <Text style={[styles.sectorLabel, { top: '5%', left: '30%' }]}>C {'\n'}3</Text>
-              <Text style={[styles.sectorLabel, { top: '5%', right: '10%' }]}>D {'\n'}4</Text>
-              <Text style={[styles.sectorLabel, { bottom: '10%', right: '15%' }]}>1 {'\n'}A</Text>
-            </View>
+
+            {/* Sector Labels */}
+            <TouchableOpacity style={[styles.sectorLabel, styles.topLeft]} onPress={() => toggleSector('Sector A')}>
+              <Text style={styles.sectorName}>Sector A</Text>
+              <CheckBox value={selectedSectors['Sector A'] || false} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.sectorLabel, styles.topRight]} onPress={() => toggleSector('Sector B')}>
+              <Text style={styles.sectorName}>Sector B</Text>
+              <CheckBox value={selectedSectors['Sector B'] || false} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.sectorLabel, styles.bottomLeft]} onPress={() => toggleSector('Sector C')}>
+              <Text style={styles.sectorName}>Sector C</Text>
+              <CheckBox value={selectedSectors['Sector C'] || false} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={[styles.sectorLabel, styles.bottomRight]} onPress={() => toggleSector('Sector D')}>
+              <Text style={styles.sectorName}>Sector D</Text>
+              <CheckBox value={selectedSectors['Sector D'] || false} />
+            </TouchableOpacity>
           </View>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Selected Sectors"
+            placeholderTextColor="#aaa"
+            value={sectorInput}
+            editable={false}
+          />
 
           <View style={styles.pickerContainer}>
             <Picker
@@ -90,7 +136,7 @@ const styles = StyleSheet.create({
   outerContainer: {
     backgroundColor: '#e6ddcc',
     borderRadius: 10,
-    padding: 5,
+    padding: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
@@ -100,18 +146,11 @@ const styles = StyleSheet.create({
     borderColor: 'black',
   },
   card: {
-    width: width * 0.6,
-    padding: 15,
+    width: width * 0.25,
+    padding: 20,
     backgroundColor: 'white',
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: 'black',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   input: {
     height: 40,
@@ -119,7 +158,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 8,
-    paddingVertical: 8,
     borderRadius: 6,
     fontSize: 14,
     backgroundColor: '#f9f9f9',
@@ -130,17 +168,33 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   houseImage: {
-    width: width * 0.1,
-    height: width * 0.1,
-  },
-  sectorLabelContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+    width: width * 0.14,
+    height: width * 0.14,
   },
   sectorLabel: {
     position: 'absolute',
-    fontSize: 8,
+    alignItems: 'center',
+    padding: 5,
+    borderRadius: 5,
+  },
+  topLeft: {
+    bottom: '1%',
+    left: '52%',
+  },
+  topRight: {
+    top: '24%',
+    left: "12%",
+  },
+  bottomLeft: {
+    top: '3%',
+    right: '40%',
+  },
+  bottomRight: {
+    right: '14%',
+    top: '28%',
+  },
+  sectorName: {
+    fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -154,11 +208,6 @@ const styles = StyleSheet.create({
   picker: {
     height: 40,
     width: '100%',
-    color: '#000',
-    fontSize: 14,
-    borderRadius: 6,
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 8,
   },
   dateTimeContainer: {
     flexDirection: 'row',
@@ -171,7 +220,6 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     paddingHorizontal: 8,
-    paddingVertical: 8,
     borderRadius: 6,
     fontSize: 14,
     backgroundColor: '#f9f9f9',
@@ -183,19 +231,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 20,
     alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: 'black',
   },
   finishButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
   },
+  guardContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  guardIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
+  guardText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: 'black',
+  },
 });
+
 
 export default RouteForm;
