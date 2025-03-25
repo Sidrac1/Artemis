@@ -1,14 +1,23 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder, Text } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import BackButton from "../../components/BackButton"; // Importamos el nuevo componente
+import {
+  View,
+  StyleSheet,
+  PanResponder,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
+import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
+import HeaderTitleBox from "../../components/HeaderTitleBox";
+import DeviceTable from "../../components/DeviceTable";
 
-const AccessesHistory = () => {
+const ManageDevices = () => {
   const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState("");
 
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 15,
+    onMoveShouldSetPanResponder: (evt, gestureState) =>
+      Math.abs(gestureState.dx) > 15,
     onPanResponderMove: (evt, gestureState) => {
       setSwipeDirection(gestureState.dx > 0 ? "Right" : "Left");
     },
@@ -21,32 +30,52 @@ const AccessesHistory = () => {
 
   return (
     <View style={styles.container} {...panResponder.panHandlers}>
-      <BackButton /> {/* Usamos el nuevo componente */}
-
-      <View style={styles.content}>
-        <Text style={styles.backText}>Accesses History</Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
+      <View style={styles.container}>
+        <HeaderTitleBox iconName="wrench" text="MANAGE DEVICES" />
+        <DeviceTable data={data} />
       </View>
     </View>
   );
 };
 
+const data = [
+  { type: "Patrolman", description: "Offices door", active: true },
+  { type: "Patrolman", description: "Tool Room door", active: false },
+  { type: "Patrolman", description: "Warehouse door", active: true },
+  { type: "Patrolman", description: "Logistic Center door", active: false },
+  { type: "Patrolman", description: "QA", active: true },
+  { type: "Patrolman", description: "QC", active: true },
+  { type: "Patrolman", description: "RH", active: false },
+];
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#faf9f9",
-    paddingVertical: 20,
   },
-  content: {
+  backButton: {
     flexDirection: "row",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    marginBottom: 30,
-    marginTop: 160,
+    alignItems: "center",
+    padding: 10,
+    position: "absolute",
+    top: 20,
+    left: 20,
+    backgroundColor: "#ddd",
+    borderRadius: 8,
+    zIndex: 100,
   },
   backText: {
+    marginLeft: 5,
     fontSize: 16,
     color: "black",
   },
 });
 
-export default AccessesHistory;
+export default ManageDevices;

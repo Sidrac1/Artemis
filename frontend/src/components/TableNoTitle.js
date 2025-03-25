@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     width: '80%',
     marginVertical: 10,
     alignItems: 'center',
+    marginTop: 10,
   },
   outerContainer: {
     backgroundColor: '#f5f1e6',
