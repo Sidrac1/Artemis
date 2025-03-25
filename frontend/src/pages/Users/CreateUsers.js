@@ -3,7 +3,7 @@ import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import UserForm from "../../components/UserForm";
-import HeaderTitleBox from "../../components/HeaderTitleBox"; // Importar HeaderTitleBox
+import HeaderTitleBox from "../../components/HeaderTitleBox";
 
 const CreateUsers = () => {
   const navigation = useNavigation();
