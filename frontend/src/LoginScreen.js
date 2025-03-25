@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, Platform } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native'; 
+import { API_IP  } from './api/Config';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,7 +13,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://192.168.100.14/backend/login.php', {
+      const response = await axios.post(`http://${API_IP}/backend/login.php`, {        
         correo: userId,
         contrasena: password,
       });
