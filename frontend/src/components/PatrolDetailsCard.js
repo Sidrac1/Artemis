@@ -95,7 +95,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    // Eliminamos la altura fija para que se ajuste al contenido
   },
   titleContainer: {
     flexDirection: 'row',

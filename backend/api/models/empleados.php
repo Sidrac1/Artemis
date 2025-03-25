@@ -28,7 +28,7 @@ switch ($method) {
 
 function getEmpleados() {
     global $pdo;
-    $stmt = $pdo->query("SELECT e.ID, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_puesto, p.nombre_puesto AS puesto FROM empleado e LEFT JOIN puesto p ON e.codigo_puesto = p.codigo");
+    $stmt = $pdo->query("SELECT e.ID, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_puesto, p.nombre_puesto AS puesto, e.telefono, e.genero, e.rol FROM empleado e LEFT JOIN puesto p ON e.codigo_puesto = p.codigo");
     $empleados = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($empleados);
 }
@@ -40,9 +40,12 @@ function createEmpleado() {
     $apellido_paterno = $data->apellido_paterno;
     $apellido_materno = $data->apellido_materno;
     $codigo_puesto = $data->codigo_puesto;
+    $telefono = $data->telefono;
+    $genero = $data->genero;
+    $rol = $data->rol;
 
-    $stmt = $pdo->prepare("INSERT INTO empleado (nombre, apellido_paterno, apellido_materno, codigo_puesto) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$nombre, $apellido_paterno, $apellido_materno, $codigo_puesto]);
+    $stmt = $pdo->prepare("INSERT INTO empleado (nombre, apellido_paterno, apellido_materno, codigo_puesto, telefono, genero, rol) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$nombre, $apellido_paterno, $apellido_materno, $codigo_puesto, $telefono, $genero, $rol]);
     echo json_encode(["message" => "Empleado creado"]);
 }
 
@@ -54,9 +57,12 @@ function updateEmpleado() {
     $apellido_paterno = $data->apellido_paterno;
     $apellido_materno = $data->apellido_materno;
     $codigo_puesto = $data->codigo_puesto;
+    $telefono = $data->telefono;
+    $genero = $data->genero;
+    $rol = $data->rol;
 
-    $stmt = $pdo->prepare("UPDATE empleado SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, codigo_puesto = ? WHERE ID = ?");
-    $stmt->execute([$nombre, $apellido_paterno, $apellido_materno, $codigo_puesto, $id]);
+    $stmt = $pdo->prepare("UPDATE empleado SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, codigo_puesto = ?, telefono = ?, genero = ?, rol = ? WHERE ID = ?");
+    $stmt->execute([$nombre, $apellido_paterno, $apellido_materno, $codigo_puesto, $telefono, $genero, $rol, $id]);
     echo json_encode(["message" => "Empleado actualizado"]);
 }
 

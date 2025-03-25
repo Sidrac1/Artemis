@@ -2,7 +2,6 @@ import { getApiUrl } from "./config.js";
 
 const API_URL = getApiUrl("empleados");
 
-
 export const getEmpleados = async () => {
   try {
     const response = await fetch(API_URL, {
@@ -44,12 +43,12 @@ export const updateEmpleado = async (id, empleado) => {
 
     const text = await response.text();
 
-    console.log("Respuesta del servidor:", text); 
+    console.log("Respuesta del servidor:", text);
 
     if (response.ok) {
-      return JSON.parse(text);  
+      return JSON.parse(text);
     } else {
-      console.error("Error en la respuesta:", text); 
+      console.error("Error en la respuesta:", text);
       return { message: "Error al actualizar el empleado" };
     }
   } catch (error) {
