@@ -2,11 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import HeaderTitleBox from '../../components/HeaderTitleBox'; // Importa HeaderTitleBox
+import HeaderTitleBox from '../../components/HeaderTitleBoxID';
+import ActivePatrolCard from '../../components/PatrolDetailsCard';
 
 const PatrolReportDetails = ({ route }) => {
   const navigation = useNavigation();
   const { ID, NAME, DATE } = route.params;
+
+  const patrolData = {
+    routeName: 'Warehouse Patrol',
+    guardName: 'John Doe',
+    startDate: '2024-03-16 08:00',
+    endDate: '2024-03-16 12:00',
+    sectors: 'Sector A, Sector B',
+    frequency: 'Daily',
+  };
 
   return (
     <View style={styles.container}>
@@ -15,22 +25,10 @@ const PatrolReportDetails = ({ route }) => {
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
-      <HeaderTitleBox iconName="file-alt" text="Detalles del Reporte" /> {/* Usa HeaderTitleBox */}
+      <HeaderTitleBox iconName="file-alt" text={`Detalles del Reporte ${ID}`} id={ID} />
 
-      <View style={styles.detailContainer}>
-        <Text style={styles.label}>ID:</Text>
-        <Text style={styles.value}>{ID}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Text style={styles.label}>Nombre:</Text>
-        <Text style={styles.value}>{NAME}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Text style={styles.label}>Fecha:</Text>
-        <Text style={styles.value}>{DATE}</Text>
-      </View>
+      <ActivePatrolCard patrolData={patrolData} />
 
-      {/* Aquí puedes agregar más detalles del reporte */}
     </View>
   );
 };
@@ -40,24 +38,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  detailContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginRight: 10,
-    width: 80,
-  },
-  value: {
-    flex: 1,
   },
   backButton: {
     flexDirection: 'row',

@@ -3,6 +3,7 @@ import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import DataTable from "../../components/DataTableDateFilter"; // Asegúrate de la ruta correcta
+import HeaderTitleBox from "../../components/HeaderTitleBox"; // Importa HeaderTitleBox
 
 const PatrolReports = () => {
   const navigation = useNavigation();
@@ -60,10 +61,11 @@ const PatrolReports = () => {
       </TouchableOpacity>
 
       <View style={styles.content}>
+        <HeaderTitleBox iconName="file-alt" text="Patrol Reports" />
         <DataTable
           data={patrolReportsData}
           navigation={navigation}
-          navigateTo="ReportDetails" // Nombre de la ruta para ReportDetails.js
+          navigateTo="ReportDetails"
           idKey="ID"
         />
       </View>
@@ -86,6 +88,7 @@ const styles = StyleSheet.create({
     left: 20,
     backgroundColor: "#ddd",
     borderRadius: 8,
+    zIndex: 1000,
   },
   backText: {
     marginLeft: 5,
@@ -95,7 +98,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    marginTop: 60,
   },
 });
 
