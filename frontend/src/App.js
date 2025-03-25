@@ -8,25 +8,72 @@ import Patrols from "./pages/Patrols";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import LoginScreen from "./LoginScreen";
-import { SafeAreaView } from "react-native";
+import { SafeAreaView, View } from "react-native";
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
-      <SafeAreaView style={{ flex: 1 }}>
-        <Header />
-        <Stack.Navigator initialRouteName="LoginScreen" screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="LoginScreen" component={LoginScreen} />
-          <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="Accesses" component={AccessesNavigator} />
-          <Stack.Screen name="Patrols" component={Patrols} />
-          <Stack.Screen name="Users" component={Users} />
-          <Stack.Screen name="Settings" component={Settings} />
-        </Stack.Navigator>
-      </SafeAreaView>
+      <Stack.Navigator initialRouteName="LoginScreen" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="LoginScreen" component={LoginScreenWrapper} />
+        <Stack.Screen name="Dashboard" component={DashboardWrapper} />
+        <Stack.Screen name="Accesses" component={AccessesWrapper} />
+        <Stack.Screen name="Patrols" component={PatrolsWrapper} />
+        <Stack.Screen name="Users" component={UsersWrapper} />
+        <Stack.Screen name="Settings" component={SettingsWrapper} />
+      </Stack.Navigator>
     </NavigationContainer>
+  );
+};
+
+// Wrappers:
+const LoginScreenWrapper = () => {
+  return (
+    <View style={{ flex: 1 }}>
+      <LoginScreen />
+    </View>
+  );
+};
+
+const DashboardWrapper = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header />
+      <Dashboard />
+    </SafeAreaView>
+  );
+};
+const AccessesWrapper = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header />
+      <AccessesNavigator />
+    </SafeAreaView>
+  );
+};
+const PatrolsWrapper = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header />
+      <Patrols />
+    </SafeAreaView>
+  );
+};
+const UsersWrapper = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header />
+      <Users />
+    </SafeAreaView>
+  );
+};
+const SettingsWrapper = () => {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header />
+      <Settings />
+    </SafeAreaView>
   );
 };
 
