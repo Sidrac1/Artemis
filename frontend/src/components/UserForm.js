@@ -1,70 +1,125 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { createEmpleado } from '../api/Empleados'; // Importa la función createEmpleado
 
 const { width, height } = Dimensions.get('window');
 
 const UserForm = ({ roles, onSubmit }) => {
+  const roleOptions = [
+    { display: 'SUPERVISOR', value: 'supervisor', code: '702' },
+    { display: 'GUARD', value: 'guard', code: '701' },
+    { display: 'EMPLOYEE', value: 'employee', code: '703' },
+  ];
+
   const [formData, setFormData] = useState({
-    role: roles[0],
-    name: '',
-    lastName: '',
-    gender: '',
+    role: roleOptions[0].value,
+    nombre: '',
+    apellido_paterno: '',
+    apellido_materno: '',
+    genero: '',
     email: '',
     password: '',
+    telefono: '',
+    codigo_puesto: roleOptions[0].code, // Inicializar con el código del primer rol
   });
 
   const handleChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
+    let newCodePuesto = formData.codigo_puesto;
+    if (name === 'role') {
+      const selectedRole = roleOptions.find(option => option.value === value);
+      if (selectedRole) {
+        newCodePuesto = selectedRole.code;
+      }
+    }
+    setFormData({ ...formData, [name]: value, codigo_puesto: newCodePuesto });
   };
 
-  const handleSubmit = () => {
-    onSubmit(formData);
+  const handleSubmit = async () => {
+    try {
+      const response = await createEmpleado({
+        nombre: formData.nombre,
+        apellido_paterno: formData.apellido_paterno,
+        apellido_materno: formData.apellido_materno,
+        codigo_puesto: formData.codigo_puesto,
+        telefono: formData.telefono,
+        genero: formData.genero,
+        rol: formData.role,
+        email: formData.email, 
+        password: formData.password, 
+      });
+
+      if (response && response.message === "Empleado creado") {
+        Alert.alert("Éxito", "Empleado creado con éxito");
+        setFormData({
+          role: roleOptions[0].value,
+          nombre: '',
+          apellido_paterno: '',
+          apellido_materno: '',
+          genero: '',
+          email: '',
+          password: '',
+          telefono: '',
+          codigo_puesto: roleOptions[0].code,
+        });
+      } else {
+        Alert.alert("Error", "Error al crear empleado");
+      }
+    } catch (error) {
+      console.error("Error en handleSubmit:", error);
+      Alert.alert("Error", "Error al crear empleado");
+    }
   };
 
-  const showEmailAndPassword = formData.role !== 'GUARD' && formData.role !== 'EMPLOYEE';
+  const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
+  const showPhoneNumber = formData.role !== 'administrator' && formData.role !== 'supervisor';
 
   return (
     <View style={styles.container}>
       <View style={styles.outerContainer}>
         <View style={styles.card}>
-          {/* Role Selector */}
           <View style={styles.roleContainer}>
-            {roles.map((role) => (
+            {roleOptions.map((role) => (
               <TouchableOpacity
-                key={role}
+                key={role.value}
                 style={[
                   styles.roleButton,
-                  formData.role === role && styles.roleButtonSelected,
+                  formData.role === role.value && styles.roleButtonSelected,
                 ]}
-                onPress={() => handleChange('role', role)}
+                onPress={() => handleChange('role', role.value)}
               >
-                <Text style={styles.roleButtonText}>{role}</Text>
+                <Text style={styles.roleButtonText}>{role.display}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Input Fields */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="Name"
               placeholderTextColor="#aaa"
-              value={formData.name}
-              onChangeText={(text) => handleChange('name', text)}
+              value={formData.nombre}
+              onChangeText={(text) => handleChange('nombre', text)}
             />
             <TextInput
               style={styles.input}
               placeholder="Last Name"
               placeholderTextColor="#aaa"
-              value={formData.lastName}
-              onChangeText={(text) => handleChange('lastName', text)}
+              value={formData.apellido_paterno}
+              onChangeText={(text) => handleChange('apellido_paterno', text)}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Second Last Name"
+              placeholderTextColor="#aaa"
+              value={formData.apellido_materno}
+              onChangeText={(text) => handleChange('apellido_materno', text)}
             />
             <View style={styles.pickerContainer}>
               <Picker
-                selectedValue={formData.gender}
+                selectedValue={formData.genero}
                 style={styles.picker}
-                onValueChange={(itemValue) => handleChange('gender', itemValue)}
+                onValueChange={(itemValue) => handleChange('genero', itemValue)}
               >
                 <Picker.Item label="Gender" value="" />
                 <Picker.Item label="Male" value="Male" />
@@ -72,7 +127,17 @@ const UserForm = ({ roles, onSubmit }) => {
               </Picker>
             </View>
 
-            {/* Show Email and Password only if not "Guardia" or "Empleado" */}
+            {showPhoneNumber && (
+              <TextInput
+                style={styles.input}
+                placeholder="Phone"
+                placeholderTextColor="#aaa"
+                value={formData.telefono}
+                onChangeText={(text) => handleChange('telefono', text)}
+                keyboardType="phone-pad"
+              />
+            )}
+
             {showEmailAndPassword ? (
               <>
                 <TextInput
@@ -95,7 +160,6 @@ const UserForm = ({ roles, onSubmit }) => {
             ) : null}
           </View>
 
-          {/* Register Button */}
           <TouchableOpacity style={styles.registerButton} onPress={handleSubmit}>
             <Text style={styles.registerButtonText}>Register</Text>
           </TouchableOpacity>
@@ -111,91 +175,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#f8f8f8',
-    paddingTop: height * 0.05,
+    paddingTop: 20,
   },
   outerContainer: {
     backgroundColor: '#e6ddcc',
-    borderRadius: 15,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 3,
-    borderColor: 'black',
-  },
-  card: {
-    width: width * 0.3,
-    padding: 30,
-    backgroundColor: 'white',
     borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 3,
-    borderColor: 'black',
-    marginBottom: 10,
-  },
-  roleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#f4f4f4',
-    borderRadius: 20,
-    marginBottom: 30,
-    paddingVertical: 12,
-  },
-  roleButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  roleButtonSelected: {
-    backgroundColor: '#e6ddcc',
-  },
-  roleButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  inputContainer: {
-    marginBottom: 30,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 8,
-    fontSize: 18,
-    backgroundColor: '#f9f9f9',
-  },
-  pickerContainer: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
-    backgroundColor: '#f9f9f9',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    color: '#000',
-    fontSize: 18,
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 14,
-  },
-  registerButton: {
-    backgroundColor: '#e6ddcc',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    alignSelf: 'center',
+    padding: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -204,8 +189,87 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'black',
   },
+  card: {
+    width: width * 0.25,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: 'black',
+    marginBottom: 8,
+  },
+  roleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#f4f4f4',
+    borderRadius: 15,
+    marginBottom: 20,
+    paddingVertical: 8,
+  },
+  roleButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+    borderRadius: 15,
+  },
+  roleButtonSelected: {
+    backgroundColor: '#e6ddcc',
+  },
+  roleButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  pickerContainer: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 6,
+    marginBottom: 15,
+    backgroundColor: '#f9f9f9',
+  },
+  picker: {
+    height: 40,
+    width: '100%',
+    color: '#000',
+    fontSize: 16,
+    borderRadius: 6,
+    backgroundColor: '#f9f9f9',
+    paddingHorizontal: 10,
+  },
+  registerButton: {
+    backgroundColor: '#e6ddcc',
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'black',
+  },
   registerButtonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'black',
   },
