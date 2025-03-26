@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Alert } from 'react-native';
-import { getLoginUrl } from './config'; // Importa la función
+import { getLoginUrl } from './Config'; // Importa la función
 
 const LoginScreen = ({ navigation }) => {
   const [correo, setCorreo] = useState('');

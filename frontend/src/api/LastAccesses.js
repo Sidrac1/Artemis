@@ -1,4 +1,4 @@
-import { getApiUrl } from "./config.js";
+import { getApiUrl } from "./Config.js";
 
 const API_URL = getApiUrl("last_accesses");
 
