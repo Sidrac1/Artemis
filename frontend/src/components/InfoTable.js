@@ -54,10 +54,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "black",
     elevation: 5,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
     paddingTop: 5,
   },
   title: {
@@ -109,10 +105,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "black",
     elevation: 3,
-    shadowColor: "rgba(0, 0, 0, 0.1)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
   },
   mobileTitle: {
     fontSize: 12,
