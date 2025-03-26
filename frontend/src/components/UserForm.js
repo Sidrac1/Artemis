@@ -5,7 +5,7 @@ import Notification from './Notification';
 import useUserFormLogic from './UserFormLogic';
 import { styles } from './UserFormStyles';
 import Icon from 'react-native-vector-icons/Ionicons'; 
-import { API_IP } from '../api/config';
+import { API_IP } from '../api/Config';
 import axios from 'axios'; 
 import useValidation from './Validations'; 
 
