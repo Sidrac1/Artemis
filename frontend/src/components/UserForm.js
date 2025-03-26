@@ -1,14 +1,17 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Notification from './Notification';
 import useUserFormLogic from './UserFormLogic';
-import { styles } from './UserFormStyles'; // Importa los estilos
-import Icon from 'react-native-vector-icons/Ionicons'; // Asegúrate de tener esta librería instalada
+import { styles } from './UserFormStyles'; // Imports the styles
+import Icon from 'react-native-vector-icons/Ionicons'; // Make sure you have this library installed
+import { API_IP } from '../api/Config';
+import axios from 'axios'; // Imports axios
+import useValidation from './Validations'; // Imports the validation hook
 
-const isWeb = Platform.OS === 'web'; // Corrección del uso de Dimensions
+const isWeb = Platform.OS === 'web'; // Correction of Dimensions usage
 
-const UserForm = ({ onSubmit }) => {
+const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
     const {
         formData,
         errors,
@@ -18,17 +21,115 @@ const UserForm = ({ onSubmit }) => {
         roleOptions,
         genderOptions,
         handleChange,
-        handleSubmit,
+        handleSubmit: baseHandleSubmit,
         handleCloseNotification,
         showEmailAndPassword,
         showPhoneNumber,
     } = useUserFormLogic({ onSubmit });
 
+    const {
+        validateName,
+        validatePhone: validatePhoneFormat,
+        checkPhoneExists, // Imports the function to check the phone
+        validateEmail: validateEmailFormat,
+        checkEmailExists,
+        validateGender,
+        validatePassword,
+    } = useValidation();
+
     const formRef = useRef(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [emailExistsError, setEmailExistsError] = useState('');
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false); // To indicate email check in progress
+    const [phoneExistsError, setPhoneExistsError] = useState(''); // New state for phone error
+    const [isCheckingPhone, setIsCheckingPhone] = useState(false); // New state for phone verification in progress
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
+    };
+
+    const checkEmailAvailability = async (email) => {
+        if (!email) {
+            setEmailExistsError('');
+            return;
+        }
+        setIsCheckingEmail(true);
+        setEmailExistsError(''); // Clear previous error
+
+        try {
+            const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
+                correo: email,
+            });
+
+            if (response.data.exists) {
+                setEmailExistsError('This email address is already registered.');
+            }
+        } catch (error) {
+            console.error('Error checking email:', error);
+            setEmailExistsError('Connection error while checking email.');
+        } finally {
+            setIsCheckingEmail(false);
+        }
+    };
+
+    const handleEmailChange = (text) => {
+        handleChange('email', text);
+        // Debounce the email check for better performance
+        clearTimeout(emailCheckTimeout.current);
+        emailCheckTimeout.current = setTimeout(() => {
+            checkEmailAvailability(text);
+        }, 500); // Check after 500ms of typing
+    };
+
+    const emailCheckTimeout = useRef(null);
+
+    const checkPhoneAvailability = async (phone) => {
+        if (!phone) {
+            setPhoneExistsError('');
+            return;
+        }
+        setIsCheckingPhone(true);
+        setPhoneExistsError('');
+
+        const isValidFormat = validatePhoneFormat(phone) === null;
+        if (!isValidFormat) {
+            setPhoneExistsError('Please enter a valid 10-digit phone number.');
+            setIsCheckingPhone(false);
+            return;
+        }
+
+        const exists = await checkPhoneExists(phone);
+
+        if (exists === true) {
+            setPhoneExistsError('This phone number is already registered.');
+        } else if (exists === null) {
+            setPhoneExistsError('Error checking phone number availability.');
+        }
+        setIsCheckingPhone(false);
+    };
+
+    const handlePhoneChange = (text) => {
+        if (/^[0-9]*$/.test(text) && text.length <= 10) {
+            handleChange('telefono', text);
+            clearTimeout(phoneCheckTimeout.current);
+            phoneCheckTimeout.current = setTimeout(() => {
+                checkPhoneAvailability(text);
+            }, 500);
+        }
+    };
+
+    const phoneCheckTimeout = useRef(null);
+
+    const handleSubmit = () => {
+        if (emailExistsError) {
+            Alert.alert('Error', 'This email address is already registered.');
+            return;
+        }
+        if (phoneExistsError) {
+            Alert.alert('Error', 'This phone number is already registered.');
+            return;
+        }
+        baseHandleSubmit();
     };
 
     return (
@@ -58,7 +159,6 @@ const UserForm = ({ onSubmit }) => {
                     <Text style={styles.fieldLabel}>Name</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Enter your name"
                         placeholderTextColor="#aaa"
                         value={formData.nombre}
                         onChangeText={(text) => handleChange('nombre', text)}
@@ -68,7 +168,6 @@ const UserForm = ({ onSubmit }) => {
                     <Text style={styles.fieldLabel}>Last Name</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Enter your last name"
                         placeholderTextColor="#aaa"
                         value={formData.apellido_paterno}
                         onChangeText={(text) => handleChange('apellido_paterno', text)}
@@ -78,8 +177,6 @@ const UserForm = ({ onSubmit }) => {
                     <Text style={styles.fieldLabel}>Second Last Name</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Enter your second last name"
-                        placeholderTextColor="#aaa"
                         value={formData.apellido_materno}
                         onChangeText={(text) => handleChange('apellido_materno', text)}
                     />
@@ -117,24 +214,20 @@ const UserForm = ({ onSubmit }) => {
                     {errors.genero && <Text style={styles.errorText}>{errors.genero}</Text>}
 
                     {showPhoneNumber && (
-                        <View style={{ marginBottom: errors.telefono ? 35 : 10 }}>
+                        <View style={{ marginBottom: errors.telefono || phoneExistsError ? 35 : 10 }}>
                             <Text style={styles.fieldLabel}>Phone number</Text>
                             <View style={mergedStyles.phoneInputContainer}>
                                 <TextInput
                                     style={mergedStyles.phoneInput}
-                                    placeholder="Enter phone number"
-                                    placeholderTextColor="#aaa"
                                     value={formData.telefono}
-                                    onChangeText={(text) => {
-                                        if (/^[0-9]*$/.test(text) && text.length <= 10) {
-                                            handleChange('telefono', text);
-                                        }
-                                    }}
-                                    keyboardType="default"
+                                    onChangeText={handlePhoneChange} // Uses the modified function
+                                    keyboardType="phone-pad"
                                 />
                                 <Text style={mergedStyles.phoneLengthIndicator}>{telefonoLength}/10</Text>
                             </View>
                             {errors.telefono && <Text style={styles.errorText}>{errors.telefono}</Text>}
+                            {phoneExistsError && <Text style={styles.errorText}>{phoneExistsError}</Text>}
+                            {isCheckingPhone && <Text style={styles.infoText}>Verifying phone...</Text>}
                         </View>
                     )}
 
@@ -146,24 +239,24 @@ const UserForm = ({ onSubmit }) => {
                                 placeholder="example@domain.com"
                                 placeholderTextColor="#aaa"
                                 value={formData.email}
-                                onChangeText={(text) => handleChange('email', text)}
+                                onChangeText={handleEmailChange} // Use the modified function
                                 keyboardType="email-address"
                             />
                             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                            {emailExistsError && <Text style={styles.errorText}>{emailExistsError}</Text>}
+                            {isCheckingEmail && <Text style={styles.infoText}>Verifying email...</Text>}
 
                             <Text style={styles.fieldLabel}>Password (Min. 8 characters)</Text>
-                            <View style={mergedStyles.passwordInputContainer}>
+                            <View style={mergedStyles.passwordContainer}>
                                 <TextInput
                                     style={mergedStyles.passwordInput}
-                                    placeholder="Enter password"
-                                    placeholderTextColor="#aaa"
                                     value={formData.password}
                                     onChangeText={(text) => handleChange('password', text)}
                                     secureTextEntry={!isPasswordVisible}
                                 />
                                 <TouchableOpacity style={mergedStyles.eyeIcon} onPress={togglePasswordVisibility}>
                                     <Icon
-                                        name={isPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+                                        name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
                                         size={20}
                                         color="#aaa"
                                     />
@@ -182,7 +275,7 @@ const UserForm = ({ onSubmit }) => {
     );
 };
 
-// Corrección en los estilos
+// Correction in styles
 const localStyles = StyleSheet.create({
     phoneInputContainer: {
         flexDirection: 'row',
@@ -206,7 +299,7 @@ const localStyles = StyleSheet.create({
         fontSize: 12,
         color: '#888',
     },
-    passwordInputContainer: {
+    passwordContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
@@ -214,7 +307,6 @@ const localStyles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 6,
         backgroundColor: '#f9f9f9',
-        paddingRight: 10,
     },
     passwordInput: {
         flex: 1,
@@ -225,6 +317,11 @@ const localStyles = StyleSheet.create({
     },
     eyeIcon: {
         padding: 10,
+    },
+    infoText: {
+        fontSize: 12,
+        color: 'blue',
+        marginTop: 5,
     },
 });
 

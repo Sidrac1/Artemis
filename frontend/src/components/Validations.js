@@ -1,5 +1,8 @@
 // validations.js
 
+import { API_IP } from '../api/Config';
+import axios from 'axios';
+
 const validateName = (name) => {
     if (!name.trim()) {
         return 'Please enter the name.';
@@ -10,7 +13,7 @@ const validateName = (name) => {
     return null;
 };
 
-const validatePhone = (phone) => {
+const validatePhoneFormat = (phone) => {
     if (!phone.trim()) {
         return 'Please enter the phone number.';
     }
@@ -23,7 +26,19 @@ const validatePhone = (phone) => {
     return null;
 };
 
-const validateEmail = (email) => {
+const checkPhoneExists = async (phone) => {
+    try {
+        const response = await axios.post(`http://${API_IP}/backend/api/models/empleados.php?action=checkPhone`, {
+            telefono: phone,
+        });
+        return response.data.exists;
+    } catch (error) {
+        console.error('Error checking phone existence:', error);
+        return null;
+    }
+};
+
+const validateEmailFormat = (email) => {
     if (!email.trim()) {
         return 'Please enter the email address.';
     }
@@ -31,6 +46,18 @@ const validateEmail = (email) => {
         return 'Please enter a valid email address';
     }
     return null;
+};
+
+const checkEmailExists = async (email) => {
+    try {
+        const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
+            correo: email,
+        });
+        return response.data.exists;
+    } catch (error) {
+        console.error('Error checking email existence:', error);
+        return null;
+    }
 };
 
 const validateGender = (gender) => {
@@ -53,8 +80,10 @@ const validatePassword = (password) => {
 const useValidation = () => {
     return {
         validateName,
-        validatePhone,
-        validateEmail,
+        validatePhone: validatePhoneFormat, 
+        checkPhoneExists, 
+        validateEmail: validateEmailFormat,
+        checkEmailExists,
         validateGender,
         validatePassword,
     };
