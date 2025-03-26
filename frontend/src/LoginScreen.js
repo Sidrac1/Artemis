@@ -13,7 +13,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(`http://${API_IP}/artemis/backend/login.php`, {        
+      const response = await axios.post(`http://${API_IP}/Artemis/backend/login.php`, {        
         correo: userId,
         contrasena: password,
       });

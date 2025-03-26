@@ -58,6 +58,51 @@ if (isset($_GET['action'])) {
     }
 }
 
+if (isset($_GET['action'])) {
+    switch ($_GET['action']) {
+        case 'checkPhone':
+            checkPhone();
+            break;
+        default:
+            switch ($method) {
+                case 'GET':
+                    getEmpleados();
+                    break;
+                case 'POST':
+                    createEmpleado();
+                    break;
+                case 'PUT':
+                    updateEmpleado();
+                    break;
+                case 'DELETE':
+                    deleteEmpleado();
+                    break;
+                default:
+                    echo json_encode(["message" => "Método no permitido"]);
+                    break;
+            }
+            break;
+    }
+} else {
+    switch ($method) {
+        case 'GET':
+            getEmpleados();
+            break;
+        case 'POST':
+            createEmpleado();
+            break;
+        case 'PUT':
+            updateEmpleado();
+            break;
+        case 'DELETE':
+            deleteEmpleado();
+            break;
+        default:
+            echo json_encode(["message" => "Método no permitido"]);
+            break;
+    }
+}
+
 function getEmpleados()
 {
     global $pdo;
@@ -85,7 +130,7 @@ function createEmpleado()
             $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM empleado WHERE telefono = ?");
             $stmt_check->execute([$telefono]);
             if ($stmt_check->fetchColumn() > 0) {
-                http_response_code(409);
+                http_response_code(409); 
                 echo json_encode(["message" => "Ya existe un empleado con este número de teléfono."]);
                 return;
             }
@@ -98,10 +143,11 @@ function createEmpleado()
 
         if ($rol === 'supervisor' && $email !== null && $password !== null) {
             $stmt_login = $pdo->prepare("INSERT INTO login (id_empleado, correo, contrasena) VALUES (?, ?, ?)");
-            $stmt_login->execute([$empleado_id, $email, $password]);
+            $stmt_login->execute([$empleado_id, $email, $password]); 
         }
 
         echo json_encode(["message" => "Empleado creado"]);
+
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(["message" => "Error al crear empleado: " . $e->getMessage()]);
@@ -126,7 +172,7 @@ function updateEmpleado()
             $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM empleado WHERE telefono = ? AND ID != ?");
             $stmt_check->execute([$telefono, $id]);
             if ($stmt_check->fetchColumn() > 0) {
-                http_response_code(409);
+                http_response_code(409); 
                 echo json_encode(["message" => "Ya existe otro empleado con este número de teléfono."]);
                 return;
             }
@@ -152,8 +198,7 @@ function deleteEmpleado()
     echo json_encode(["message" => "Empleado eliminado"]);
 }
 
-function checkPhone()
-{
+function checkPhone() {
     global $pdo;
     $data = json_decode(file_get_contents("php://input"));
     $telefono = isset($data->telefono) ? trim($data->telefono) : '';
@@ -173,3 +218,4 @@ function checkPhone()
         echo json_encode(["exists" => null, "message" => "Error al verificar el teléfono: " . $e->getMessage()]);
     }
 }
+?>
