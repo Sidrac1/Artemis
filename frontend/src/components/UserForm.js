@@ -3,15 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard
 import { Picker } from '@react-native-picker/picker';
 import Notification from './Notification';
 import useUserFormLogic from './UserFormLogic';
-import { styles } from './UserFormStyles'; // Imports the styles
-import Icon from 'react-native-vector-icons/Ionicons'; // Make sure you have this library installed
+import { styles } from './UserFormStyles';
+import Icon from 'react-native-vector-icons/Ionicons'; 
 import { API_IP } from '../api/Config';
-import axios from 'axios'; // Imports axios
-import useValidation from './Validations'; // Imports the validation hook
+import axios from 'axios'; 
+import useValidation from './Validations'; 
 
-const isWeb = Platform.OS === 'web'; // Correction of Dimensions usage
+const isWeb = Platform.OS === 'web'; 
 
-const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
+const UserForm = ({ onSubmit }) => { 
     const {
         formData,
         errors,
@@ -30,7 +30,7 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
     const {
         validateName,
         validatePhone: validatePhoneFormat,
-        checkPhoneExists, // Imports the function to check the phone
+        checkPhoneExists, 
         validateEmail: validateEmailFormat,
         checkEmailExists,
         validateGender,
@@ -40,9 +40,9 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
     const formRef = useRef(null);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [emailExistsError, setEmailExistsError] = useState('');
-    const [isCheckingEmail, setIsCheckingEmail] = useState(false); // To indicate email check in progress
-    const [phoneExistsError, setPhoneExistsError] = useState(''); // New state for phone error
-    const [isCheckingPhone, setIsCheckingPhone] = useState(false); // New state for phone verification in progress
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const [phoneExistsError, setPhoneExistsError] = useState('');
+    const [isCheckingPhone, setIsCheckingPhone] = useState(false);
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
@@ -54,7 +54,7 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
             return;
         }
         setIsCheckingEmail(true);
-        setEmailExistsError(''); // Clear previous error
+        setEmailExistsError(''); 
 
         try {
             const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
@@ -74,11 +74,10 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
 
     const handleEmailChange = (text) => {
         handleChange('email', text);
-        // Debounce the email check for better performance
         clearTimeout(emailCheckTimeout.current);
         emailCheckTimeout.current = setTimeout(() => {
             checkEmailAvailability(text);
-        }, 500); // Check after 500ms of typing
+        }, 500); 
     };
 
     const emailCheckTimeout = useRef(null);
@@ -220,7 +219,7 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
                                 <TextInput
                                     style={mergedStyles.phoneInput}
                                     value={formData.telefono}
-                                    onChangeText={handlePhoneChange} // Uses the modified function
+                                    onChangeText={handlePhoneChange}
                                     keyboardType="phone-pad"
                                 />
                                 <Text style={mergedStyles.phoneLengthIndicator}>{telefonoLength}/10</Text>
@@ -239,7 +238,7 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
                                 placeholder="example@domain.com"
                                 placeholderTextColor="#aaa"
                                 value={formData.email}
-                                onChangeText={handleEmailChange} // Use the modified function
+                                onChangeText={handleEmailChange} 
                                 keyboardType="email-address"
                             />
                             {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
@@ -256,7 +255,6 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
                                 />
                                 <TouchableOpacity style={mergedStyles.eyeIcon} onPress={togglePasswordVisibility}>
                                     <Icon
-                                        name={isPasswordVisible ? "eye-outline" : "eye-off-outline"}
                                         size={20}
                                         color="#aaa"
                                     />
@@ -275,7 +273,6 @@ const UserForm = ({ onSubmit }) => { // Removed checkExistingEmail prop
     );
 };
 
-// Correction in styles
 const localStyles = StyleSheet.create({
     phoneInputContainer: {
         flexDirection: 'row',
@@ -314,9 +311,6 @@ const localStyles = StyleSheet.create({
         paddingHorizontal: 10,
         color: '#000',
         fontSize: 16,
-    },
-    eyeIcon: {
-        padding: 10,
     },
     infoText: {
         fontSize: 12,

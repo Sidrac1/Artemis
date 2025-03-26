@@ -1,8 +1,7 @@
-// Componente 1: UserFormLogic.js (Lógica del formulario)
 import React, { useState } from 'react';
 import { Dimensions, Platform } from 'react-native';
 import { createEmpleado } from '../api/Empleados';
-import * as Crypto from 'expo-crypto'; // Importa la librería de hashing
+import * as Crypto from 'expo-crypto'; 
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
@@ -34,7 +33,7 @@ const validateLastName = (lastName) => {
 };
 
 const validateSecondLastName = (secondLastName) => {
-    return null; // Second Last Name is not required
+    return null; 
 };
 
 const validateEmail = (email) => {
@@ -103,7 +102,7 @@ const useUserFormLogic = ({ onSubmit }) => {
             case 'email':
                 break;
             case 'password':
-                setShowPasswordError(false); // Clear generic password error on typing
+                setShowPasswordError(false);
                 break;
             case 'genero':
                 setFormData({ ...formData, [name]: value });
@@ -126,7 +125,6 @@ const useUserFormLogic = ({ onSubmit }) => {
             genero: formData.genero ? null : 'Please select a gender',
         };
 
-        // Validar teléfono como obligatorio para 'guard' y 'employee'
         if (formData.role === 'guard' || formData.role === 'employee') {
             if (!formData.telefono.trim()) {
                 newErrors.telefono = 'Phone number is required';
@@ -135,7 +133,6 @@ const useUserFormLogic = ({ onSubmit }) => {
             }
         }
 
-        // Los supervisores SÍ deben tener email y contraseña
         const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
         if (showEmailAndPassword) {
             newErrors.email = validateEmail(formData.email);
@@ -165,7 +162,6 @@ const useUserFormLogic = ({ onSubmit }) => {
 
                 const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
                 if (showEmailAndPassword && formData.email && formData.password) {
-                    // Hash the password before sending it
                     const hashedPassword = await Crypto.digestStringAsync(
                         Crypto.CryptoDigestAlgorithm.SHA256,
                         formData.password

@@ -1,10 +1,9 @@
-// Componente 3: UserFormStyles.js (Estilos del formulario)
 import { StyleSheet, Dimensions, Platform } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 const baseScaleMobile = 0.8;
-const baseScaleWeb = 1.0;
+const baseScaleWeb = 0.8;
 const mobileOuterContainerWidthPercentage = 0.90;
 
 export const styles = StyleSheet.create({

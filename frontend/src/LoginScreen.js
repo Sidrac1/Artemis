@@ -9,7 +9,7 @@ const { width, height } = Dimensions.get('window');
 const LoginScreen = () => {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation(); // Obtiene el objeto navigation
+  const navigation = useNavigation();
 
   const handleLogin = async () => {
     try {
@@ -19,7 +19,6 @@ const LoginScreen = () => {
       });
   
       if (response.data.message === 'Inicio de sesión exitoso') {
-        // Redirige a la pantalla "Dashboard" después de un inicio de sesión exitoso
         navigation.navigate('Dashboard');
       } else {
         Alert.alert('Error', response.data.message);

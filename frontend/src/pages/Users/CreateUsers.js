@@ -48,10 +48,7 @@ const CreateUsers = () => {
         <Text style={styles.backText}></Text>
       </View>
 
-      {/* Usar HeaderTitleBox */}
       <HeaderTitleBox iconName="user-plus" text="CREATE USER" />
-
-      {/* Usar UserForm con los roles y la función handleRegister */}
       <UserForm roles={['SUPERVISOR', 'GUARD', 'EMPLOYEE']} onSubmit={handleRegister} />
     </View>
   );

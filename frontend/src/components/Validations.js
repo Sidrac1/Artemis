@@ -1,5 +1,3 @@
-// validations.js
-
 import { API_IP } from '../api/Config';
 import axios from 'axios';
 
