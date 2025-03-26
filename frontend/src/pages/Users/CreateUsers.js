@@ -3,7 +3,7 @@ import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-na
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import UserForm from "../../components/UserForm";
-import HeaderTitleBox from "../../components/HeaderTitleBox"; // Importar HeaderTitleBox
+import HeaderTitleBox from "../../components/HeaderTitleBox";
 
 const CreateUsers = () => {
   const navigation = useNavigation();
@@ -48,10 +48,7 @@ const CreateUsers = () => {
         <Text style={styles.backText}></Text>
       </View>
 
-      {/* Usar HeaderTitleBox */}
       <HeaderTitleBox iconName="user-plus" text="CREATE USER" />
-
-      {/* Usar UserForm con los roles y la función handleRegister */}
       <UserForm roles={['SUPERVISOR', 'GUARD', 'EMPLOYEE']} onSubmit={handleRegister} />
     </View>
   );

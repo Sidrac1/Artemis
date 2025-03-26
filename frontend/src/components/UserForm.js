@@ -1,214 +1,327 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Keyboard, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import Notification from './Notification';
+import useUserFormLogic from './UserFormLogic';
+import { styles } from './UserFormStyles';
+import Icon from 'react-native-vector-icons/Ionicons'; 
+import { API_IP } from '../api/Config';
+import axios from 'axios'; 
+import useValidation from './Validations'; 
 
-const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web'; 
 
-const UserForm = ({ roles, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    role: roles[0],
-    name: '',
-    lastName: '',
-    gender: '',
-    email: '',
-    password: '',
-  });
+const UserForm = ({ onSubmit }) => { 
+    const {
+        formData,
+        errors,
+        showPasswordError,
+        notification,
+        telefonoLength,
+        roleOptions,
+        genderOptions,
+        handleChange,
+        handleSubmit: baseHandleSubmit,
+        handleCloseNotification,
+        showEmailAndPassword,
+        showPhoneNumber,
+    } = useUserFormLogic({ onSubmit });
 
-  const handleChange = (name, value) => {
-    setFormData({ ...formData, [name]: value });
-  };
+    const {
+        validateName,
+        validatePhone: validatePhoneFormat,
+        checkPhoneExists, 
+        validateEmail: validateEmailFormat,
+        checkEmailExists,
+        validateGender,
+        validatePassword,
+    } = useValidation();
 
-  const handleSubmit = () => {
-    onSubmit(formData);
-  };
+    const formRef = useRef(null);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [emailExistsError, setEmailExistsError] = useState('');
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const [phoneExistsError, setPhoneExistsError] = useState('');
+    const [isCheckingPhone, setIsCheckingPhone] = useState(false);
 
-  const showEmailAndPassword = formData.role !== 'GUARD' && formData.role !== 'EMPLOYEE';
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible(!isPasswordVisible);
+    };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.outerContainer}>
-        <View style={styles.card}>
-          {/* Role Selector */}
-          <View style={styles.roleContainer}>
-            {roles.map((role) => (
-              <TouchableOpacity
-                key={role}
-                style={[
-                  styles.roleButton,
-                  formData.role === role && styles.roleButtonSelected,
-                ]}
-                onPress={() => handleChange('role', role)}
-              >
-                <Text style={styles.roleButtonText}>{role}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+    const checkEmailAvailability = async (email) => {
+        if (!email) {
+            setEmailExistsError('');
+            return;
+        }
+        setIsCheckingEmail(true);
+        setEmailExistsError(''); 
 
-          {/* Input Fields */}
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.input}
-              placeholder="Name"
-              placeholderTextColor="#aaa"
-              value={formData.name}
-              onChangeText={(text) => handleChange('name', text)}
+        try {
+            const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
+                correo: email,
+            });
+
+            if (response.data.exists) {
+                setEmailExistsError('This email address is already registered.');
+            }
+        } catch (error) {
+            console.error('Error checking email:', error);
+            setEmailExistsError('Connection error while checking email.');
+        } finally {
+            setIsCheckingEmail(false);
+        }
+    };
+
+    const handleEmailChange = (text) => {
+        handleChange('email', text);
+        clearTimeout(emailCheckTimeout.current);
+        emailCheckTimeout.current = setTimeout(() => {
+            checkEmailAvailability(text);
+        }, 500); 
+    };
+
+    const emailCheckTimeout = useRef(null);
+
+    const checkPhoneAvailability = async (phone) => {
+        if (!phone) {
+            setPhoneExistsError('');
+            return;
+        }
+        setIsCheckingPhone(true);
+        setPhoneExistsError('');
+
+        const isValidFormat = validatePhoneFormat(phone) === null;
+        if (!isValidFormat) {
+            setPhoneExistsError('Please enter a valid 10-digit phone number.');
+            setIsCheckingPhone(false);
+            return;
+        }
+
+        const exists = await checkPhoneExists(phone);
+
+        if (exists === true) {
+            setPhoneExistsError('This phone number is already registered.');
+        } else if (exists === null) {
+            setPhoneExistsError('Error checking phone number availability.');
+        }
+        setIsCheckingPhone(false);
+    };
+
+    const handlePhoneChange = (text) => {
+        if (/^[0-9]*$/.test(text) && text.length <= 10) {
+            handleChange('telefono', text);
+            clearTimeout(phoneCheckTimeout.current);
+            phoneCheckTimeout.current = setTimeout(() => {
+                checkPhoneAvailability(text);
+            }, 500);
+        }
+    };
+
+    const phoneCheckTimeout = useRef(null);
+
+    const handleSubmit = () => {
+        if (emailExistsError) {
+            Alert.alert('Error', 'This email address is already registered.');
+            return;
+        }
+        if (phoneExistsError) {
+            Alert.alert('Error', 'This phone number is already registered.');
+            return;
+        }
+        baseHandleSubmit();
+    };
+
+    return (
+        <View style={styles.container}>
+            <Notification
+                message={notification.message}
+                type={notification.type}
+                onClose={handleCloseNotification}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Last Name"
-              placeholderTextColor="#aaa"
-              value={formData.lastName}
-              onChangeText={(text) => handleChange('lastName', text)}
-            />
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={formData.gender}
-                style={styles.picker}
-                onValueChange={(itemValue) => handleChange('gender', itemValue)}
-              >
-                <Picker.Item label="Gender" value="" />
-                <Picker.Item label="Male" value="Male" />
-                <Picker.Item label="Female" value="Female" />
-              </Picker>
+            <View style={styles.outerContainer}>
+                <View style={styles.card}>
+                    <View style={styles.roleContainer}>
+                        {roleOptions.map((role) => (
+                            <TouchableOpacity
+                                key={role.value}
+                                style={[
+                                    styles.roleButton,
+                                    formData.role === role.value && styles.roleButtonSelected,
+                                ]}
+                                onPress={() => handleChange('role', role.value)}
+                            >
+                                <Text style={styles.roleButtonText}>{role.display}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <Text style={styles.fieldLabel}>Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholderTextColor="#aaa"
+                        value={formData.nombre}
+                        onChangeText={(text) => handleChange('nombre', text)}
+                    />
+                    {errors.nombre && <Text style={styles.errorText}>{errors.nombre}</Text>}
+
+                    <Text style={styles.fieldLabel}>Last Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholderTextColor="#aaa"
+                        value={formData.apellido_paterno}
+                        onChangeText={(text) => handleChange('apellido_paterno', text)}
+                    />
+                    {errors.apellido_paterno && <Text style={styles.errorText}>{errors.apellido_paterno}</Text>}
+
+                    <Text style={styles.fieldLabel}>Second Last Name</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={formData.apellido_materno}
+                        onChangeText={(text) => handleChange('apellido_materno', text)}
+                    />
+                    {errors.apellido_materno && <Text style={styles.errorText}>{errors.apellido_materno}</Text>}
+
+                    <Text style={styles.fieldLabel}>Select Gender</Text>
+                    {!isWeb ? (
+                        <View style={styles.genderButtonContainer}>
+                            {genderOptions.map((gender) => (
+                                <TouchableOpacity
+                                    key={gender.value}
+                                    style={[
+                                        styles.genderButton,
+                                        formData.genero === gender.value && styles.genderButtonSelected,
+                                    ]}
+                                    onPress={() => handleChange('genero', gender.value)}
+                                >
+                                    <Text style={styles.genderButtonText}>{gender.display}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    ) : (
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={formData.genero}
+                                style={styles.picker}
+                                onValueChange={(itemValue) => handleChange('genero', itemValue)}
+                            >
+                                {genderOptions.map((gender) => (
+                                    <Picker.Item key={gender.value} label={gender.display} value={gender.value} />
+                                ))}
+                            </Picker>
+                        </View>
+                    )}
+                    {errors.genero && <Text style={styles.errorText}>{errors.genero}</Text>}
+
+                    {showPhoneNumber && (
+                        <View style={{ marginBottom: errors.telefono || phoneExistsError ? 35 : 10 }}>
+                            <Text style={styles.fieldLabel}>Phone number</Text>
+                            <View style={mergedStyles.phoneInputContainer}>
+                                <TextInput
+                                    style={mergedStyles.phoneInput}
+                                    value={formData.telefono}
+                                    onChangeText={handlePhoneChange}
+                                    keyboardType="phone-pad"
+                                />
+                                <Text style={mergedStyles.phoneLengthIndicator}>{telefonoLength}/10</Text>
+                            </View>
+                            {errors.telefono && <Text style={styles.errorText}>{errors.telefono}</Text>}
+                            {phoneExistsError && <Text style={styles.errorText}>{phoneExistsError}</Text>}
+                            {isCheckingPhone && <Text style={styles.infoText}>Verifying phone...</Text>}
+                        </View>
+                    )}
+
+                    {showEmailAndPassword && (
+                        <>
+                            <Text style={styles.fieldLabel}>Email</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="example@domain.com"
+                                placeholderTextColor="#aaa"
+                                value={formData.email}
+                                onChangeText={handleEmailChange} 
+                                keyboardType="email-address"
+                            />
+                            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                            {emailExistsError && <Text style={styles.errorText}>{emailExistsError}</Text>}
+                            {isCheckingEmail && <Text style={styles.infoText}>Verifying email...</Text>}
+
+                            <Text style={styles.fieldLabel}>Password (Min. 8 characters)</Text>
+                            <View style={mergedStyles.passwordContainer}>
+                                <TextInput
+                                    style={mergedStyles.passwordInput}
+                                    value={formData.password}
+                                    onChangeText={(text) => handleChange('password', text)}
+                                    secureTextEntry={!isPasswordVisible}
+                                />
+                                <TouchableOpacity style={mergedStyles.eyeIcon} onPress={togglePasswordVisibility}>
+                                    <Icon
+                                        size={20}
+                                        color="#aaa"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            {showPasswordError && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                        </>
+                    )}
+
+                    <TouchableOpacity style={styles.registerButton} onPress={handleSubmit}>
+                        <Text style={styles.registerButtonText}>Register</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-
-            {/* Show Email and Password only if not "Guardia" or "Empleado" */}
-            {showEmailAndPassword ? (
-              <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor="#aaa"
-                  value={formData.email}
-                  onChangeText={(text) => handleChange('email', text)}
-                  keyboardType="email-address"
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#aaa"
-                  value={formData.password}
-                  onChangeText={(text) => handleChange('password', text)}
-                  secureTextEntry={true}
-                />
-              </>
-            ) : null}
-          </View>
-
-          {/* Register Button */}
-          <TouchableOpacity style={styles.registerButton} onPress={handleSubmit}>
-            <Text style={styles.registerButtonText}>Register</Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </View>
-  );
+    );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: '#f8f8f8',
-    paddingTop: height * 0.05,
-  },
-  outerContainer: {
-    backgroundColor: '#e6ddcc',
-    borderRadius: 15,
-    padding: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 3,
-    borderColor: 'black',
-  },
-  card: {
-    width: width * 0.3,
-    padding: 30,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 3,
-    borderColor: 'black',
-    marginBottom: 10,
-  },
-  roleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#f4f4f4',
-    borderRadius: 20,
-    marginBottom: 30,
-    paddingVertical: 12,
-  },
-  roleButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  roleButtonSelected: {
-    backgroundColor: '#e6ddcc',
-  },
-  roleButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  inputContainer: {
-    marginBottom: 30,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 8,
-    fontSize: 18,
-    backgroundColor: '#f9f9f9',
-  },
-  pickerContainer: {
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
-    backgroundColor: '#f9f9f9',
-  },
-  picker: {
-    height: 50,
-    width: '100%',
-    color: '#000',
-    fontSize: 18,
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 14,
-  },
-  registerButton: {
-    backgroundColor: '#e6ddcc',
-    paddingVertical: 16,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    borderWidth: 2,
-    borderColor: 'black',
-  },
-  registerButtonText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'black',
-  },
+const localStyles = StyleSheet.create({
+    phoneInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+    },
+    phoneInput: {
+        flex: 1,
+        height: 40,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 6,
+        paddingHorizontal: 10,
+        color: '#000',
+        fontSize: 16,
+        backgroundColor: '#f9f9f9',
+    },
+    phoneLengthIndicator: {
+        position: 'absolute',
+        right: 10,
+        fontSize: 12,
+        color: '#888',
+    },
+    passwordContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 6,
+        backgroundColor: '#f9f9f9',
+    },
+    passwordInput: {
+        flex: 1,
+        height: 40,
+        paddingHorizontal: 10,
+        color: '#000',
+        fontSize: 16,
+    },
+    infoText: {
+        fontSize: 12,
+        color: 'blue',
+        marginTop: 5,
+    },
+});
+
+const mergedStyles = StyleSheet.create({
+    ...styles,
+    ...localStyles,
 });
 
 export default UserForm;
