@@ -1,38 +1,127 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header('Content-Type: application/json');
 
-include_once '../config/db.php';
+error_log("login.php: Starting execution"); 
+
+$dbFilePath = 'api/config/db.php';
+if (!file_exists($dbFilePath)) {
+    error_log("login.php: Error - db.php not found at " . $dbFilePath);
+    echo json_encode(["message" => "Error: db.php not found"]);
+    exit;
+}
+
+include_once $dbFilePath;
+
+error_log("login.php: db.php included");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST') {
-    login();
+    error_log("login.php: Method is POST");
+    if (isset($_GET['action']) && $_GET['action'] === 'checkEmail') {
+        checkEmail();
+    } else {
+        login();
+    }
 } else {
+    error_log("login.php: Method is not POST"); 
     echo json_encode(["message" => "Método no permitido"]);
 }
 
 function login() {
     global $pdo;
+
+    error_log("login.php: login() function started"); 
+
     $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
     $correo = $data->correo;
-    $contrasena = $data->contrasena;
+    $contrasena = $data->contrasena; 
 
     if (empty($correo) || empty($contrasena)) {
+        error_log("login.php: Email or password missing");
         echo json_encode(["message" => "Correo y contraseña son requeridos"]);
         return;
     }
 
-    $stmt = $pdo->prepare("SELECT id_empleado, rol FROM login WHERE correo = ? AND contrasena = ?");
-    $stmt->execute([$correo, $contrasena]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare("
+            SELECT l.id_empleado, e.rol, l.contrasena
+            FROM login l
+            INNER JOIN empleado e ON l.id_empleado = e.ID
+            WHERE l.correo = ?
+        ");
+        $stmt->execute([$correo]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($user) {
-        echo json_encode(["message" => "Inicio de sesión exitoso", "id_empleado" => $user['id_empleado'], "rol" => $user['rol']]);
-    } else {
-        echo json_encode(["message" => "Credenciales incorrectas"]);
+        if ($user) {
+            if ($contrasena === $user['contrasena']) {
+                error_log("login.php: Login successful");
+                echo json_encode([
+                    "message" => "Inicio de sesión exitoso",
+                    "id_empleado" => $user['id_empleado'],
+                    "rol" => $user['rol']
+                ]);
+            } else {
+                error_log("login.php: Invalid credentials - password mismatch");
+                echo json_encode(["message" => "Credenciales incorrectas"]);
+            }
+        } else {
+            error_log("login.php: Invalid credentials - user not found");
+            echo json_encode(["message" => "Credenciales incorrectas"]);
+        }
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error"]);
+    }
+
+}
+
+function checkEmail() {
+    global $pdo;
+
+    error_log("login.php: checkEmail() function started"); 
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in checkEmail: " . json_last_error_msg());
+        echo json_encode(["exists" => false, "message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $correo = $data->correo;
+
+    if (empty($correo)) {
+        error_log("login.php: Email missing in checkEmail");
+        echo json_encode(["exists" => false, "message" => "Error: Email is required"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM login WHERE correo = ?
+        ");
+        $stmt->execute([$correo]);
+        $count = $stmt->fetchColumn();
+
+        if ($count > 0) {
+            error_log("login.php: Email exists: " . $correo);
+            echo json_encode(["exists" => true]);
+        } else {
+            error_log("login.php: Email does not exist: " . $correo);
+            echo json_encode(["exists" => false]);
+        }
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in checkEmail: " . $e->getMessage());
+        echo json_encode(["exists" => false, "message" => "Error: Database error"]);
     }
 }
 ?>

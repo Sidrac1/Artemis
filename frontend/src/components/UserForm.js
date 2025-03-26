@@ -57,7 +57,7 @@ const UserForm = ({ onSubmit }) => {
         setEmailExistsError(''); 
 
         try {
-            const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
+            const response = await axios.post(`http://${API_IP}/Artemis/backend/login.php?action=checkEmail`, {
                 correo: email,
             });
 

@@ -26,7 +26,7 @@ const validatePhoneFormat = (phone) => {
 
 const checkPhoneExists = async (phone) => {
     try {
-        const response = await axios.post(`http://${API_IP}/backend/api/models/empleados.php?action=checkPhone`, {
+        const response = await axios.post(`http://${API_IP}/Artemis/backend/api/models/empleados.php?action=checkPhone`, {
             telefono: phone,
         });
         return response.data.exists;
@@ -48,7 +48,7 @@ const validateEmailFormat = (email) => {
 
 const checkEmailExists = async (email) => {
     try {
-        const response = await axios.post(`http://${API_IP}/backend/login.php?action=checkEmail`, {
+        const response = await axios.post(`http://${API_IP}/Artemis/backend/login.php?action=checkEmail`, {
             correo: email,
         });
         return response.data.exists;
