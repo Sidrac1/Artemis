@@ -9,7 +9,7 @@ const Header = () => {
   const activeRoute =
     navigationState?.index !== undefined
       ? navigationState.routes[navigationState.index]?.name
-      : "Dashboard"; // Asegura que "Dashboard" esté activo por defecto
+      : "Dashboard"; 
 
   const getActiveStyle = (routeName) =>
     activeRoute === routeName ? styles.active : {};
@@ -52,10 +52,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f1e6",
     height: 80,
     paddingVertical: 10,
-    position: "absolute",  // Se coloca nuevamente en absoluto para que esté fijo
-    bottom: 0,  // Asegura que esté en la parte inferior
+    position: "absolute",  
+    bottom: 0,  
     width: "100%",
-    zIndex: 10,  // Para que el Header esté encima de otros elementos
+    zIndex: 10,  
   },
   headerWeb: {
     flexDirection: "row",
@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
     height: 100,
     paddingVertical: 15,
     position: "relative",
+    zIndex: 10,
   },
   menuItem: {
     alignItems: "center",

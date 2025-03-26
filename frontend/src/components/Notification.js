@@ -1,4 +1,3 @@
-// components/Notification.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 
@@ -7,20 +6,20 @@ const isWeb = Platform.OS === 'web';
 
 const Notification = ({ message, type, duration = 2000, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(-150)); // Start even further up
+  const [slideAnim] = useState(new Animated.Value(-150)); 
 
   useEffect(() => {
     if (message) {
       setIsVisible(true);
       Animated.timing(slideAnim, {
-        toValue: isWeb ? -10 : -20, // Slide down a bit more for mobile
-        duration: 150, // Faster animation
+        toValue: isWeb ? -10 : -20, 
+        duration: 150, 
         useNativeDriver: true,
       }).start(() => {
         setTimeout(() => {
           Animated.timing(slideAnim, {
-            toValue: -145, // Match the initial value for a clean exit
-            duration: 150, // Faster animation
+            toValue: -145, 
+            duration: 150, 
             useNativeDriver: true,
           }).start(() => {
             setIsVisible(false);
@@ -36,11 +35,11 @@ const Notification = ({ message, type, duration = 2000, onClose }) => {
   const getBackgroundColor = () => {
     switch (type) {
       case 'success':
-        return '#2E7D32'; // Verde profesional
+        return '#2E7D32'; 
       case 'error':
-        return '#D32F2F'; // Rojo profesional
+        return '#D32F2F'; 
       default:
-        return '#1976D2'; // Azul profesional
+        return '#1976D2'; 
     }
   };
 
@@ -64,41 +63,41 @@ const Notification = ({ message, type, duration = 2000, onClose }) => {
   );
 };
 
-const baseMarginWeb = 0.35; // Even more margin for web (narrower)
+const baseMarginWeb = 0.35; 
 const webWidthPercentage = 1 - (baseMarginWeb * 2);
 
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: -120, // Start even further above (adjust as needed)
-    left: screenWidth * 0.1, // Default for mobile (80% width)
+    top: -100, 
+    left: screenWidth * 0.1, 
     right: screenWidth * 0.1,
-    paddingVertical: 10, // Increased vertical padding for mobile (longer)
-    paddingHorizontal: 15, // Increased horizontal padding for mobile (wider)
-    borderRadius: 12, // More border radius
+    paddingVertical: 10, 
+    paddingHorizontal: 15, 
+    borderRadius: 12, 
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1000,
+    zIndex: 999,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08, // Even less shadow opacity
+    shadowOpacity: 0.08, 
     shadowRadius: 1,
-    elevation: 0, // Even lower elevation
+    elevation: 0, 
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(0, 0, 0, 0.1)', // Even lighter border color
+    borderColor: 'rgba(0, 0, 0, 0.1)', 
   },
   text: {
-    fontSize: 12, // Increased font size for mobile
+    fontSize: 12, 
     fontWeight: 'bold',
   },
   containerWeb: {
     left: screenWidth * baseMarginWeb,
     right: screenWidth * baseMarginWeb,
     width: screenWidth * webWidthPercentage,
-    paddingVertical: 10, // Slightly more vertical padding for web (longer)
+    paddingVertical: 10, 
     paddingHorizontal: 12,
-    borderRadius: 12, // More border radius for web
+    borderRadius: 12, 
   },
   textWeb: {
     fontSize: 12,
