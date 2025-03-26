@@ -58,61 +58,14 @@ if (isset($_GET['action'])) {
     }
 }
 
-if (isset($_GET['action'])) {
-    switch ($_GET['action']) {
-        case 'checkPhone':
-            checkPhone();
-            break;
-        default:
-            switch ($method) {
-                case 'GET':
-                    getEmpleados();
-                    break;
-                case 'POST':
-                    createEmpleado();
-                    break;
-                case 'PUT':
-                    updateEmpleado();
-                    break;
-                case 'DELETE':
-                    deleteEmpleado();
-                    break;
-                default:
-                    echo json_encode(["message" => "Método no permitido"]);
-                    break;
-            }
-            break;
-    }
-} else {
-    switch ($method) {
-        case 'GET':
-            getEmpleados();
-            break;
-        case 'POST':
-            createEmpleado();
-            break;
-        case 'PUT':
-            updateEmpleado();
-            break;
-        case 'DELETE':
-            deleteEmpleado();
-            break;
-        default:
-            echo json_encode(["message" => "Método no permitido"]);
-            break;
-    }
-}
-
-function getEmpleados()
-{
+function getEmpleados() {
     global $pdo;
     $stmt = $pdo->query("SELECT e.ID, e.nombre, e.apellido_paterno, e.apellido_materno, e.codigo_puesto, p.nombre_puesto AS puesto, e.telefono, e.genero, e.rol FROM empleado e LEFT JOIN puesto p ON e.codigo_puesto = p.codigo");
     $empleados = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($empleados);
 }
 
-function createEmpleado()
-{
+function createEmpleado() {
     global $pdo;
     $data = json_decode(file_get_contents("php://input"));
     $nombre = $data->nombre;
@@ -154,8 +107,7 @@ function createEmpleado()
     }
 }
 
-function updateEmpleado()
-{
+function updateEmpleado() {
     global $pdo;
     $data = json_decode(file_get_contents("php://input"));
     $id = $data->id;
@@ -181,14 +133,14 @@ function updateEmpleado()
         $stmt = $pdo->prepare("UPDATE empleado SET nombre = ?, apellido_paterno = ?, apellido_materno = ?, codigo_puesto = ?, telefono = ?, genero = ?, rol = ? WHERE ID = ?");
         $stmt->execute([$nombre, $apellido_paterno, $apellido_materno, $codigo_puesto, $telefono, $genero, $rol, $id]);
         echo json_encode(["message" => "Empleado actualizado"]);
+
     } catch (PDOException $e) {
         http_response_code(500);
         echo json_encode(["message" => "Error al actualizar empleado: " . $e->getMessage()]);
     }
 }
 
-function deleteEmpleado()
-{
+function deleteEmpleado() {
     global $pdo;
     $data = json_decode(file_get_contents("php://input"));
     $id = $data->id;
