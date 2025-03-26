@@ -1,4 +1,4 @@
-import { getApiUrl } from "./Config.js";
+import { getApiUrl } from "./config.js";
 
 const API_URL = getApiUrl("empleados");
 

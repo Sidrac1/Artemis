@@ -1,4 +1,4 @@
-import { API_IP } from '../api/Config';
+import { API_IP } from '../api/config';
 import axios from 'axios';
 
 const validateName = (name) => {

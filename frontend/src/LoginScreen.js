@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, Platform } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native'; 
-import { API_IP  } from './api/Config';
+import { API_IP  } from './api/config';
 
 const { width, height } = Dimensions.get('window');
 
