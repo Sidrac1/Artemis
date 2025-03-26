@@ -23,7 +23,7 @@ const TableNoTitle = ({ data }) => {
     const lastnameMatch = item["lastname"] ? item["lastname"].toLowerCase().includes(searchText) : false;
     const areaMatch = item.area ? item.area.toLowerCase().includes(searchText) : false;
 
-    const itemDate = parseDate(item.date);
+    const itemDate = parseDate(item.fecha);
     const startMatch = dateRange.startDate ? dateRange.startDate <= itemDate : true;
     const endMatch = dateRange.endDate ? dateRange.endDate >= itemDate : true;
 

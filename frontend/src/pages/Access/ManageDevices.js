@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect ,useState } from "react";
 import {
   View,
   StyleSheet,
@@ -10,10 +10,25 @@ import { useNavigation } from "@react-navigation/native"; // Importar useNavigat
 import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
 import HeaderTitleBox from "../../components/HeaderTitleBox";
 import DeviceTable from "../../components/DeviceTable";
+import { getDispositivos } from "../../api/Dispositivos";
 
 const ManageDevices = () => {
   const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState("");
+  const [dispositivos, setDispositivos] = useState([]);
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const DispositivosData = await getDispositivos(); 
+          setDispositivos(DispositivosData); 
+        } catch (error) {
+          console.error('Error al obtener los datos:', error);
+        }
+      };
+  
+      fetchData();
+    }, []);
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) =>
@@ -39,21 +54,11 @@ const ManageDevices = () => {
       </TouchableOpacity>
       <View style={styles.container}>
         <HeaderTitleBox iconName="wrench" text="MANAGE DEVICES" />
-        <DeviceTable data={data} />
+        <DeviceTable data={dispositivos} />
       </View>
     </View>
   );
 };
-
-const data = [
-  { type: "Patrolman", description: "Offices door", active: true },
-  { type: "Patrolman", description: "Tool Room door", active: false },
-  { type: "Patrolman", description: "Warehouse door", active: true },
-  { type: "Patrolman", description: "Logistic Center door", active: false },
-  { type: "Patrolman", description: "QA", active: true },
-  { type: "Patrolman", description: "QC", active: true },
-  { type: "Patrolman", description: "RH", active: false },
-];
 
 const styles = StyleSheet.create({
   container: {

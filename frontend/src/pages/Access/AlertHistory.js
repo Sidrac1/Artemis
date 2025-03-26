@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -10,10 +10,26 @@ import { useNavigation } from "@react-navigation/native"; // Importar useNavigat
 import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
 import HeaderTitleBox from "../../components/HeaderTitleBox";
 import TableNoTitle from "../../components/TableNoTitle";
+import { getAlertHistory } from "../../api/Alert_History";
 
 const AlertHistory = () => {
   const navigation = useNavigation(); // Para navegar a otras pantallas
   const [swipeDirection, setSwipeDirection] = useState("");
+  const [alertHistory, setAlertHistory] = useState([]);
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          // Obtener las últimas alertas
+          const AlertHistoryData = await getAlertHistory(); 
+          setAlertHistory(AlertHistoryData); 
+        } catch (error) {
+          console.error('Error al obtener los datos:', error);
+        }
+      };
+  
+      fetchData();
+    }, []);
 
   // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
@@ -54,86 +70,11 @@ const AlertHistory = () => {
 
       <View style={styles.content}>
         <HeaderTitleBox iconName="exclamation-circle" text="ALERT HISTORY" />
-        <TableNoTitle data={Alert} />
+        <TableNoTitle data={alertHistory} />
       </View>
     </View>
   );
 };
-
-const Alert = [
-  {
-    area: "Warehouse",
-    date: "03/06/2025",
-    time: "14:25",
-    description: "Attempted entry without valid credentials.",
-  },
-  {
-    area: "Warehouse",
-    date: "03/06/2025",
-    time: "22:25",
-    description: "Attempted entry without valid credentials.",
-  },
-  {
-    area: "Warehouse",
-    date: "03/06/2025",
-    time: "18:25",
-    description: "Attempted entry without valid credentials.",
-  },
-  {
-    area: "Warehouse",
-    date: "03/06/2025",
-    time: "08:25",
-    description: "Attempted entry without valid credentials.",
-  },
-  {
-    area: "Parking Lot",
-    date: "04/06/2025",
-    time: "10:30",
-    description: "Unauthorized movement detected.",
-  },
-  {
-    area: "Main Office",
-    date: "05/06/2025",
-    time: "13:45",
-    description: "Failed fingerprint scan attempt.",
-  },
-  {
-    area: "Reception",
-    date: "06/06/2025",
-    time: "09:15",
-    description: "Door opened outside of schedule.",
-  },
-  {
-    area: "Tool Room",
-    date: "07/06/2025",
-    time: "17:50",
-    description: "Attempted access with invalid RFID card.",
-  },
-  {
-    area: "Garage",
-    date: "08/06/2025",
-    time: "21:30",
-    description: "Unrecognized vehicle entry detected.",
-  },
-  {
-    area: "Server Room",
-    date: "09/06/2025",
-    time: "11:25",
-    description: "Unauthorized file access attempt.",
-  },
-  {
-    area: "Meeting Room",
-    date: "10/06/2025",
-    time: "16:45",
-    description: "Unauthorized entry during restricted hours.",
-  },
-  {
-    area: "Security Room",
-    date: "11/06/2025",
-    time: "19:00",
-    description: "Security camera tampering detected.",
-  },
-];
 
 const styles = StyleSheet.create({
   container: {

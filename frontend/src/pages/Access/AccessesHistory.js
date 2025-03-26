@@ -1,13 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect ,useState } from "react";
 import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
 import { Ionicons } from "@expo/vector-icons"; // Ícono para el botón
 import HeaderTitleBox from "../../components/HeaderTitleBox";
 import TableNoTitle from "../../components/TableNoTitle";
+import { getAccessesHistory } from "../../api/Accesses_History";
 
 const AccessesHistory = () => {
   const navigation = useNavigation(); // Para navegar a otras pantallas
   const [swipeDirection, setSwipeDirection] = useState("");
+  const [accessesHistory, setAccessesHistory] = useState([]);
+
+  useEffect(() => {
+        const fetchData = async () => {
+          try {
+
+            // Obtener las últimas alertas
+            const AccessesHistoryData = await getAccessesHistory(); 
+            setAccessesHistory(AccessesHistoryData); 
+          } catch (error) {
+            console.error('Error al obtener los datos:', error);
+          }
+        };
+    
+        fetchData();
+      }, []);
 
   // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
@@ -45,7 +62,7 @@ const AccessesHistory = () => {
 
       <View style={styles.container}>
         <HeaderTitleBox iconName="door-open" text="ACCESSES HISTORY" />
-        <TableNoTitle data={AccesesHistory} />
+        <TableNoTitle data={accessesHistory} />
       </View>
     </View>
   );
@@ -54,7 +71,7 @@ const AccessesHistory = () => {
 const AccesesHistory = [
   {
     area: "Tool Room",
-    date: "03/06/2025",
+    fecha: "03/06/2025",
     time: "14:25",
     name: "Erick Alvarez",
     role: "Supervisor",
@@ -62,7 +79,7 @@ const AccesesHistory = [
   },
   {
     area: "Servers Room",
-    date: "06/07/2025",
+    fecha: "06/07/2025",
     time: "14:25",
     name: "Erick Alvarez",
     role: "Employees",
@@ -70,7 +87,7 @@ const AccesesHistory = [
   },
   {
     area: "Meeting Room",
-    date: "04/05/2025",
+    fecha: "04/05/2025",
     time: "14:25",
     name: "Angel Gameros",
     role: "Employees",
@@ -78,7 +95,7 @@ const AccesesHistory = [
   },
   {
     area: "QC Room",
-    date: "14/07/2025",
+    fecha: "14/07/2025",
     time: "14:25",
     name: "Manuel Osuna",
     role: "Supervisor",

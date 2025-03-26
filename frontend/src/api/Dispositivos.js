@@ -46,6 +46,21 @@ export const updateDispositivo = async (codigo, dispositivo) => {
   }
 };
 
+export const updateEstadoDispositivo = async (codigo, estado) => {
+  try {
+    const response = await fetch(API_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ codigo, estado }),
+    });
+    return await response.json();
+  } catch (error) {
+    console.error("Error actualizando estado del dispositivo:", error);
+  }
+};
+
 export const deleteDispositivo = async (codigo) => {
   try {
     const response = await fetch(API_URL, {

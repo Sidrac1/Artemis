@@ -28,7 +28,15 @@ switch($method) {
 
 function getDispositivos() {
     global $pdo;
-    $stmt = $pdo->query("SELECT * FROM dispositivo");
+    $stmt = $pdo->query("SELECT 
+        d.codigo AS codigo,
+        d.tipo AS tipo,
+        d.ubicacion AS ubicacion,
+        a.nombre AS area,
+        d.estado AS estado
+    FROM dispositivo d
+    JOIN area a ON d.codigo_area = a.codigo_area
+    ORDER BY d.codigo ASC");
     $dispositivos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($dispositivos);
 }
@@ -50,14 +58,23 @@ function updateDispositivo() {
     global $pdo;
     $data = json_decode(file_get_contents("php://input"));
     $codigo = $data->codigo;
-    $tipo = $data->tipo;
-    $estado = $data->estado;
-    $ubicacion = $data->ubicacion;
-    $codigo_area = $data->codigo_area;
 
-    $stmt = $pdo->prepare("UPDATE dispositivo SET tipo = ?, estado = ?, ubicacion = ?, codigo_area = ? WHERE codigo = ?");
-    $stmt->execute([$tipo, $estado, $ubicacion, $codigo_area, $codigo]);
-    echo json_encode(["message" => "Dispositivo actualizado"]);
+    if (isset($data->estado) && !isset($data->tipo) && !isset($data->ubicacion) && !isset($data->codigo_area)) {
+        // Actualizar solo el estado
+        $stmt = $pdo->prepare("UPDATE dispositivo SET estado = ? WHERE codigo = ?");
+        $stmt->execute([$data->estado, $codigo]);
+        echo json_encode(["message" => "Estado del dispositivo actualizado"]);
+    } else {
+        // Actualizar otros campos
+        $tipo = $data->tipo;
+        $estado = $data->estado;
+        $ubicacion = $data->ubicacion;
+        $codigo_area = $data->codigo_area;
+
+        $stmt = $pdo->prepare("UPDATE dispositivo SET tipo = ?, estado = ?, ubicacion = ?, codigo_area = ? WHERE codigo = ?");
+        $stmt->execute([$tipo, $estado, $ubicacion, $codigo_area, $codigo]);
+        echo json_encode(["message" => "Dispositivo actualizado"]);
+    }
 }
 
 function deleteDispositivo() {

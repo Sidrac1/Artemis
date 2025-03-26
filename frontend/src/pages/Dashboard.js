@@ -1,12 +1,59 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, PanResponder } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, PanResponder } from "react-native";
 import { useNavigation } from "@react-navigation/native"; // Importar useNavigation
 import Infocard from "../components/Infocard";
 import InfoTable from "../components/InfoTable";
+import { getRondas } from '../api/Ronda';
+import { getEmpleados } from '../api/Empleados';
+import { getLastAccesses } from "../api/LastAccesses";
+import { getLastAlerts } from "../api/LastAlerts";
 
 const Dashboard = () => {
+  const [activeRoutes, setActiveRoutes] = useState(0);
+  const [supervisores, setSupervisores] = useState(0);
+  const [guardias, setGuardias] = useState(0);
+  const [empleados, setEmpleados] = useState(0);
+  const [accesses, setAccesses] = useState([]);
+  const [alerts, setAlerts] = useState([]);
   const navigation = useNavigation(); // Para navegar a otras pantallas
   const [swipeDirection, setSwipeDirection] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Obtener los datos de rondas
+        const rondasData = await getRondas();
+        const activeCount = rondasData.filter(ronda => ronda.estado === 1).length;
+        setActiveRoutes(activeCount);
+
+        const empleadosData = await getEmpleados();
+
+        // Filtrar los supervisores
+        const supervisoresCount = empleadosData.filter(emp => emp.puesto === "Supervisor").length;
+        setSupervisores(supervisoresCount);
+
+        // Filtrar los guardias
+        const guardiasCount = empleadosData.filter(emp => emp.puesto === "Guardia").length;
+        setGuardias(guardiasCount);
+
+        // todos los empleados
+        const empleadosCount = empleadosData.length;
+        setEmpleados(empleadosCount);
+
+        // Obtener los últimos accesos
+        const lastAccessesData = await getLastAccesses(); 
+        setAccesses(lastAccessesData); 
+
+        // Obtener las últimas alertas
+        const lastAlertsData = await getLastAlerts(); 
+        setAlerts(lastAlertsData); 
+      } catch (error) {
+        console.error('Error al obtener los datos:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
@@ -39,108 +86,23 @@ const Dashboard = () => {
       {...panResponder.panHandlers} // Asocia los gestos al contenedor
     >
       <View style={styles.content}>
-        <Infocard title="Active Routes" number={3} iconName="route" />
-        <Infocard title="Supervisors" number={2} iconName="user-cog" />
-        <Infocard title="Guards" number={6} iconName="user-shield" />
-        <Infocard title="Employees" number={6} iconName="user-lock" />
+        <Infocard title="Active Routes" number={activeRoutes} iconName="route" />
+        <Infocard title="Supervisors" number={supervisores} iconName="user-cog" />
+        <Infocard title="Guards" number={guardias} iconName="user-shield" />
+        <Infocard title="Employees" number={empleados} iconName="user-lock" />
       </View>
       <View style={styles.content}>
-        <InfoTable title="LAST ACCESSES" data={Accesses} />
-        <InfoTable title="LAST ALERTS" data={Alerts} />
+        <InfoTable title="LAST ACCESSES" data={accesses} />
+        <InfoTable title="LAST ALERTS" data={alerts} />
       </View>
     </View>
   );
 };
 
-const Alerts = [
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "14:25",
-    description: "Attempted entry without valid credentials.",
-  },
-  {
-    area: "Main Hall",
-    date: "03/06/2025",
-    time: "10:30",
-    description: "Door opened outside of schedule.",
-  },
-  {
-    area: "Warehouse",
-    date: "03/06/2025",
-    time: "18:45",
-    description: "Unauthorized movement detected.",
-  },
-  {
-    area: "Reception",
-    date: "03/06/2025",
-    time: "08:15",
-    description: "Failed fingerprint scan attempt.",
-  },
-  {
-    area: "Garage",
-    date: "03/06/2025",
-    time: "22:50",
-    description: "Forced entry detected at the door.",
-  },
-];
-
-const Accesses = [
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "14:25",
-    name: "Manuel Osuna",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "16:25",
-    name: "Erick Alvarez",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "18:25",
-    name: "Angel Gameros",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "20:25",
-    name: "Edoardo Sanchez",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "16:25",
-    name: "Manuel Osuna",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "18:25",
-    name: "Manuel Osuna",
-    role: "Supervisor",
-  },
-  {
-    area: "Tool Room",
-    date: "03/06/2025",
-    time: "19:25",
-    name: "Manuel Osuna",
-    role: "Supervisor",
-  },
-];
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#faf9f9",
+    backgroundColor: "#fff",
     paddingVertical: 20,
   },
   content: {

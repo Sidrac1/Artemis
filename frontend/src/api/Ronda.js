@@ -1,6 +1,6 @@
 import { getApiUrl } from "./config.js";
 
-const API_URL = getApiUrl("ronda");
+const API_URL = getApiUrl("rondas");
 
 export const getRondas = async () => {
   try {

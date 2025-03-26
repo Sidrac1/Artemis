@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     fontFamily: "PlayfairDisplay-Regular",
     fontSize: 18,
     color: "#62605c",
+    padding: 10,
   },
   active: {
     backgroundColor: "#d1cdc5",

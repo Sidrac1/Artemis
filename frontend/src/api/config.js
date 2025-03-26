@@ -1,3 +1,3 @@
-export const API_IP = "192.168.100.10";
+export const API_IP = "192.168.0.8";
 
-export const getApiUrl = (model) => `http://${API_IP}/backend/api/models/${model}.php`;
+export const getApiUrl = (model) => `http://${API_IP}/Artemis/backend/api/models/${model}.php`;
