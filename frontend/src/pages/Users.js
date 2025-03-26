@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder } from "react-native";
+import { View, StyleSheet, PanResponder, Platform } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
 import InfoButton from "../components/InfoButton";
@@ -12,68 +12,72 @@ import ModifyUsers from "./Users/ModifyUsers";
 const Stack = createStackNavigator();
 
 const UsersScreen = () => {
-  const navigation = useNavigation(); // Para navegar a otras pantallas
+  const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState('');
+  const isMobile = Platform.OS !== 'web';
 
-  // Crear el PanResponder para detectar el deslizamiento
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > 15; // Solo activar si el deslizamiento es suficiente
-    },
+    onMoveShouldSetPanResponder: (evt, gestureState) => Math.abs(gestureState.dx) > 15,
     onPanResponderMove: (evt, gestureState) => {
-      if (gestureState.dx > 0) {
-        setSwipeDirection('Right');  // Deslizó hacia la derecha
-      } else if (gestureState.dx < 0) {
-        setSwipeDirection('Left');  // Deslizó hacia la izquierda
-      }
+      if (gestureState.dx > 0) setSwipeDirection('Right');
+      else if (gestureState.dx < 0) setSwipeDirection('Left');
     },
     onPanResponderRelease: (evt, gestureState) => {
-      // Acción dependiendo de la dirección del deslizamiento
-      if (gestureState.dx > 100) {
-        // Deslizar a la derecha
-        navigation.navigate("Dashboard");
-      } else if (gestureState.dx < -100) {
-        // Deslizar a la izquierda
-        navigation.navigate("Settings");
-      }
+      if (gestureState.dx > 100) navigation.navigate("Dashboard");
+      else if (gestureState.dx < -100) navigation.navigate("Settings");
       setSwipeDirection('');
     },
   });
 
+  const webStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#faf9f9",
+      paddingVertical: 20,
+    },
+    content: {
+      flexDirection: "row",
+      justifyContent: "space-evenly",
+      flexWrap: "wrap",
+      marginBottom: 30,
+      marginTop: 160,
+    },
+  });
+
+  const mobileStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#faf9f9",
+      paddingVertical: 20,
+    },
+    content: {
+      flex: 1,
+      flexDirection: "column",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      justifyContent: "flex-start",
+    },
+  });
+
+  const currentStyles = isMobile ? mobileStyles : webStyles;
+
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
-      <View style={styles.content}>
-        <InfoButton title="MODIFY USERS" iconName="user-edit" navigateTo="ModifyUsers" />
+    <View style={currentStyles.container} {...panResponder.panHandlers}>
+      <View style={currentStyles.content}>
         <InfoButton title="CREATE USERS" iconName="user-plus" navigateTo="CreateUsers" />
+        <InfoButton title="MODIFY USERS" iconName="user-edit" navigateTo="ModifyUsers" />
       </View>
     </View>
   );
 };
 
-// Definir el Navigator correctamente
-const Users = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="UsersMain" component={UsersScreen} />
-      <Stack.Screen name="ModifyUsers" component={ModifyUsers} />
-      <Stack.Screen name="CreateUsers" component={CreateUsers} />
-    </Stack.Navigator>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#faf9f9",
-    paddingVertical: 20,
-  },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    marginBottom: 30,
-    marginTop: 160,
-  },
-});
+const Users = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="UsersMain" component={UsersScreen} />
+    <Stack.Screen name="ModifyUsers" component={ModifyUsers} />
+    <Stack.Screen name="CreateUsers" component={CreateUsers} />
+  </Stack.Navigator>
+);
 
 export default Users;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder } from "react-native";
+import { View, StyleSheet, PanResponder, Platform } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
@@ -15,6 +15,7 @@ const Stack = createStackNavigator();
 const AccessesScreen = () => {
   const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState("");
+  const isMobile = Platform.OS !== 'web';
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -37,9 +38,44 @@ const AccessesScreen = () => {
     },
   });
 
+  const webStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#faf9f9",
+      paddingVertical: 20,
+      alignItems: 'center',
+    },
+    content: {
+      flexDirection: "row",
+      justifyContent: "space-around", // Distribute items evenly
+      flexWrap: "nowrap", // Prevent wrapping to a new line
+      marginTop: 100,
+      width: '90%', // Adjust width to take more horizontal space
+      maxWidth: 1200, // Set a larger max width if needed
+    },
+  });
+
+  const mobileStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#faf9f9",
+      paddingVertical: 20,
+    },
+    content: {
+      flex: 1,
+      flexDirection: "column",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      justifyContent: "flex-start",
+    },
+  });
+
+  const currentStyles = isMobile ? mobileStyles : webStyles;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
+    <View style={currentStyles.container} {...panResponder.panHandlers}>
+      <View style={currentStyles.content}>
         <InfoButton title="ALERT HISTORY" iconName="exclamation-circle" navigateTo="AlertHistory" />
         <InfoButton title="ACCESSES HISTORY" iconName="door-open" navigateTo="AccessesHistory" />
         <InfoButton title="MANAGE DEVICES" iconName="wrench" navigateTo="ManageDevices" />
@@ -48,29 +84,28 @@ const AccessesScreen = () => {
   );
 };
 
-const AccessesNavigator = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="AccessesMain" component={AccessesScreen} />
-      <Stack.Screen name="AlertHistory" component={AlertHistory} />
-      <Stack.Screen name="AccessesHistory" component={AccessesHistory} />
-      <Stack.Screen name="ManageDevices" component={ManageDevices} />
-    </Stack.Navigator>
-  );
-};
+const AccessesNavigator = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="AccessesMain" component={AccessesScreen} />
+    <Stack.Screen name="AlertHistory" component={AlertHistory} />
+    <Stack.Screen name="AccessesHistory" component={AccessesHistory} />
+    <Stack.Screen name="ManageDevices" component={ManageDevices} />
+  </Stack.Navigator>
+);
 
 const styles = StyleSheet.create({
-  container: {
+  container: { // Keep the original style for mobile as a fallback or initial
     flex: 1,
     backgroundColor: "#faf9f9",
     paddingVertical: 20,
   },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
-    marginBottom: 30,
-    marginTop: 160,
+  content: { // Keep the original style for mobile as a fallback or initial
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    justifyContent: "flex-start",
   },
 });
 
