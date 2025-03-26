@@ -17,6 +17,8 @@ const LoginScreen = () => {
         correo: userId,
         contrasena: password,
       });
+
+      console.log(response.data);
   
       if (response.data.message === 'Inicio de sesión exitoso') {
         navigation.navigate('Dashboard');

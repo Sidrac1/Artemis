@@ -38,7 +38,7 @@ const AccessesScreen = () => {
   });
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container}>
       <View style={styles.content}>
         <InfoButton title="ALERT HISTORY" iconName="exclamation-circle" navigateTo="AlertHistory" />
         <InfoButton title="ACCESSES HISTORY" iconName="door-open" navigateTo="AccessesHistory" />
