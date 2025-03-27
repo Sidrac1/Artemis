@@ -29,6 +29,9 @@ if ($method === 'POST') {
             case 'getEmail':
                 getEmail();
                 break;
+            case 'updateEmail': // Nueva acción para actualizar el correo
+                updateEmail();
+                break;
             default:
                 login();
                 break;
@@ -210,6 +213,67 @@ function getEmail() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception in getEmail: " . $e->getMessage());
         echo json_encode(["email" => null, "message" => "Error: Database error"]);
+    }
+}
+
+function updateEmail() {
+    global $pdo;
+
+    error_log("login.php: updateEmail() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in updateEmail: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+    $nuevo_correo = $data->nuevo_correo;
+
+    if (empty($id_empleado) || empty($nuevo_correo)) {
+        error_log("login.php: Employee ID or new email missing in updateEmail");
+        echo json_encode(["message" => "Error: Employee ID and new email are required"]);
+        return;
+    }
+
+    // Validar el formato del correo electrónico
+    if (!filter_var($nuevo_correo, FILTER_VALIDATE_EMAIL)) {
+        error_log("login.php: Invalid email format in updateEmail: " . $nuevo_correo);
+        echo json_encode(["message" => "Error: Invalid email format"]);
+        return;
+    }
+
+    try {
+        // Verificar si el nuevo correo ya existe para otro usuario
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM login WHERE correo = ? AND id_empleado != ?");
+        $stmtCheck->execute([$nuevo_correo, $id_empleado]);
+        $count = $stmtCheck->fetchColumn();
+
+        if ($count > 0) {
+            error_log("login.php: New email already exists for another user: " . $nuevo_correo);
+            echo json_encode(["message" => "Error: This email address is already in use"]);
+            return;
+        }
+
+        $stmtUpdate = $pdo->prepare("
+            UPDATE login
+            SET correo = ?
+            WHERE id_empleado = ?
+        ");
+        $stmtUpdate->execute([$nuevo_correo, $id_empleado]);
+
+        if ($stmtUpdate->rowCount() > 0) {
+            error_log("login.php: Email updated successfully for employee ID " . $id_empleado . " to " . $nuevo_correo);
+            echo json_encode(["message" => "Correo electrónico actualizado exitosamente"]);
+        } else {
+            error_log("login.php: Could not update email for employee ID " . $id_empleado . " (user not found or email already the same)");
+            echo json_encode(["message" => "Error: Could not update email"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in updateEmail: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error during email update"]);
     }
 }
 ?>

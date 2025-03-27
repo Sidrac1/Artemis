@@ -14,13 +14,13 @@ const Notification = ({ message, type, duration = 2000, onClose }) => {
       Animated.timing(slideAnim, {
         toValue: isWeb ? -10 : -20, 
         duration: 150, 
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start(() => {
         setTimeout(() => {
           Animated.timing(slideAnim, {
             toValue: -145, 
             duration: 150, 
-            useNativeDriver: true,
+            useNativeDriver: false,
           }).start(() => {
             setIsVisible(false);
             if (onClose) {
