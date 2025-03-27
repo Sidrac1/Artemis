@@ -35,6 +35,9 @@ if ($method === 'POST') {
             case 'updatePassword': // Nueva acción para actualizar la contraseña
                 updatePassword();
                 break;
+            case 'getEmployeeDetailsByRole': // Nueva acción para obtener detalles del empleado por rol
+                getEmployeeDetailsByRole();
+                break;
             default:
                 login();
                 break;
@@ -317,6 +320,68 @@ function updatePassword() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception in updatePassword: " . $e->getMessage());
         echo json_encode(["message" => "Error: Database error updating password"]);
+    }
+}
+
+function getEmployeeDetailsByRole() {
+    global $pdo;
+
+    error_log("login.php: getEmployeeDetailsByRole() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in getEmployeeDetailsByRole: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+
+    if (empty($id_empleado)) {
+        error_log("login.php: Employee ID missing in getEmployeeDetailsByRole");
+        echo json_encode(["message" => "Error: Employee ID is required"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT e.nombre, e.apellido_paterno, e.apellido_materno, e.genero, e.telefono, e.rol, l.correo
+            FROM empleado e
+            LEFT JOIN login l ON e.ID = l.id_empleado
+            WHERE e.ID = ?
+        ");
+        $stmt->execute([$id_empleado]);
+        $employee = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($employee) {
+            $rol = $employee['rol'];
+            $response = [
+                'ID' => $id_empleado,
+                'nombre' => $employee['nombre'],
+                'apellido_paterno' => $employee['apellido_paterno'],
+                'apellido_materno' => $employee['apellido_materno'],
+                'genero' => $employee['genero'],
+            ];
+
+            if ($rol === 'supervisor') {
+                $response['email'] = $employee['correo'];
+                // No se incluye 'telefono' para supervisor
+            } elseif ($rol === 'empleado' || $rol === 'guardia') {
+                $response['telefono'] = $employee['telefono'];
+                // No se incluye 'email' ni 'contrasena' para empleado o guardia
+            }
+
+            error_log("login.php: Employee details for ID " . $id_empleado . " (Role: " . $rol . "): " . json_encode($response));
+            echo json_encode($response);
+
+        } else {
+            error_log("login.php: Employee not found with ID: " . $id_empleado);
+            echo json_encode(["message" => "Error: Employee not found"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in getEmployeeDetailsByRole: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error fetching employee details"]);
     }
 }
 ?>
