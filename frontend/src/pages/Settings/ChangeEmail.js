@@ -108,6 +108,7 @@ const ChangeEmail = () => {
             if (response.ok && data?.message === "Correo electrónico actualizado exitosamente") {
                 setNotification("Email updated successfully!");
                 setNotificationType("success");
+                setCurrentEmail(newEmail);
                 setNewEmail("");
             } else {
                 setNotification(data?.message || "Failed to update email.");

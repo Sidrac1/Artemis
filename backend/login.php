@@ -32,6 +32,9 @@ if ($method === 'POST') {
             case 'updateEmail': // Nueva acción para actualizar el correo
                 updateEmail();
                 break;
+            case 'updatePassword': // Nueva acción para actualizar la contraseña
+                updatePassword();
+                break;
             default:
                 login();
                 break;
@@ -76,54 +79,30 @@ function login() {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
+            $storedPassword = $user['contrasena'];
+            error_log("login.php: Contraseña almacenada para " . $correo . ": " . $storedPassword);
+
             // Verificar si la contraseña almacenada parece ser un hash SHA256 (longitud típica)
-            if (strlen($user['contrasena']) === 64) {
+            if (strlen($storedPassword) === 64) {
+                error_log("login.php: Intentando verificación SHA256");
                 // Hashear la contraseña ingresada con SHA256
                 $hashedInputPassword = hash('sha256', $contrasena);
                 // Comparar el hash de la entrada con el hash almacenado
-                if ($hashedInputPassword === $user['contrasena']) {
+                if ($hashedInputPassword === $storedPassword) {
                     error_log("login.php: Login successful (SHA256 hashed password)");
                     echo json_encode([
                         "message" => "Inicio de sesión exitoso",
                         "id_empleado" => $user['id_empleado'],
                         "rol" => $user['rol']
                     ]);
+                    return;
                 } else {
                     error_log("login.php: Invalid credentials (SHA256 hash mismatch)");
                     echo json_encode(["message" => "Credenciales incorrectas"]);
                 }
-            }
-            // Verificar si la contraseña almacenada parece ser un bcrypt hash
-            elseif (strlen($user['contrasena']) > 60 && strpos($user['contrasena'], '$2y$') === 0) {
-                if (password_verify($contrasena, $user['contrasena'])) {
-                    error_log("login.php: Login successful (bcrypt hashed password)");
-                    echo json_encode([
-                        "message" => "Inicio de sesión exitoso",
-                        "id_empleado" => $user['id_empleado'],
-                        "rol" => $user['rol']
-                    ]);
-                } else {
-                    error_log("login.php: Invalid credentials (bcrypt hash mismatch)");
-                    echo json_encode(["message" => "Credenciales incorrectas"]);
-                }
-            }
-            // Si no parece ser ningún hash conocido, intentar comparar directamente (¡RIESGO!)
-            else {
-                if ($contrasena === $user['contrasena']) {
-                    error_log("login.php: Login successful (plain text password - SECURITY RISK)");
-                    echo json_encode([
-                        "message" => "Inicio de sesión exitoso",
-                        "id_empleado" => $user['id_empleado'],
-                        "rol" => $user['rol']
-                    ]);
-                    $newHash = password_hash($contrasena, PASSWORD_DEFAULT);
-                    $updateStmt = $pdo->prepare("UPDATE login SET contrasena = ? WHERE id_empleado = ?");
-                    $updateStmt->execute([$newHash, $user['id_empleado']]);
-                    error_log("login.php: Plain text password updated to bcrypt hash for user " . $user['id_empleado']);
-                } else {
-                    error_log("login.php: Invalid credentials (plain text mismatch)");
-                    echo json_encode(["message" => "Credenciales incorrectas"]);
-                }
+            } else {
+                error_log("login.php: Contraseña almacenada no parece ser un hash SHA256");
+                echo json_encode(["message" => "Credenciales incorrectas"]);
             }
         } else {
             error_log("login.php: User not found");
@@ -274,6 +253,70 @@ function updateEmail() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception in updateEmail: " . $e->getMessage());
         echo json_encode(["message" => "Error: Database error during email update"]);
+    }
+}
+
+function updatePassword() {
+    global $pdo;
+    error_log("login.php: updatePassword() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in updatePassword: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+    $currentPassword = $data->currentPassword;
+    $newPassword = $data->newPassword;
+    $confirmPassword = $data->confirmPassword;
+
+    if (empty($id_empleado) || empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+        error_log("login.php: Required fields missing in updatePassword");
+        echo json_encode(["message" => "Error: All fields are required"]);
+        return;
+    }
+
+    if ($newPassword !== $confirmPassword) {
+        error_log("login.php: New password and confirm password do not match");
+        echo json_encode(["message" => "Error: New password and confirmation do not match"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT contrasena FROM login WHERE id_empleado = ?");
+        $stmt->execute([$id_empleado]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            $storedPassword = $user['contrasena'];
+
+            if (hash('sha256', $currentPassword) === $storedPassword) {
+                $hashedNewPassword = hash('sha256', $newPassword);
+
+                $updateStmt = $pdo->prepare("UPDATE login SET contrasena = ? WHERE id_empleado = ?");
+                $updateResult = $updateStmt->execute([$hashedNewPassword, $id_empleado]);
+
+                if ($updateResult) {
+                    error_log("login.php: Password updated successfully" . $id_empleado);
+                    echo json_encode(["message" => "Password updated successfully"]);
+                } else {
+                    error_log("login.php: Could not update password for employee ID " . $id_empleado);
+                    echo json_encode(["message" => "Error: Could not update password"]);
+                }
+            } else {
+                error_log("login.php: Incorrect current password for employee ID " . $id_empleado);
+                echo json_encode(["message" => "Error: Incorrect current password"]);
+            }
+        } else {
+            error_log("login.php: User not found with ID " . $id_empleado);
+            echo json_encode(["message" => "Error: User not found"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in updatePassword: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error updating password"]);
     }
 }
 ?>
