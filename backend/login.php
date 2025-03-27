@@ -21,8 +21,18 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST') {
     error_log("login.php: Method is POST");
-    if (isset($_GET['action']) && $_GET['action'] === 'checkEmail') {
-        checkEmail();
+    if (isset($_GET['action'])) {
+        switch ($_GET['action']) {
+            case 'checkEmail':
+                checkEmail();
+                break;
+            case 'getEmail':
+                getEmail();
+                break;
+            default:
+                login();
+                break;
+        }
     } else {
         login();
     }
@@ -103,7 +113,6 @@ function login() {
                         "id_empleado" => $user['id_empleado'],
                         "rol" => $user['rol']
                     ]);
-                    // ¡¡¡IMPORTANTE!!! Considera actualizar la contraseña plana a un hash más seguro (bcrypt):
                     $newHash = password_hash($contrasena, PASSWORD_DEFAULT);
                     $updateStmt = $pdo->prepare("UPDATE login SET contrasena = ? WHERE id_empleado = ?");
                     $updateStmt->execute([$newHash, $user['id_empleado']]);
@@ -161,6 +170,46 @@ function checkEmail() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception in checkEmail: " . $e->getMessage());
         echo json_encode(["exists" => false, "message" => "Error: Database error"]);
+    }
+}
+
+function getEmail() {
+    global $pdo;
+
+    error_log("login.php: getEmail() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in getEmail: " . json_last_error_msg());
+        echo json_encode(["email" => null, "message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+
+    if (empty($id_empleado)) {
+        error_log("login.php: Employee ID missing in getEmail");
+        echo json_encode(["email" => null, "message" => "Error: Employee ID is required"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT correo FROM login WHERE id_empleado = ?
+        ");
+        $stmt->execute([$id_empleado]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result && isset($result['correo'])) {
+            error_log("login.php: Email found for employee ID " . $id_empleado . ": " . $result['correo']);
+            echo json_encode(["email" => $result['correo']]);
+        } else {
+            error_log("login.php: Email not found for employee ID " . $id_empleado);
+            echo json_encode(["email" => null, "message" => "Error: Email not found for this employee ID"]);
+        }
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in getEmail: " . $e->getMessage());
+        echo json_encode(["email" => null, "message" => "Error: Database error"]);
     }
 }
 ?>
