@@ -1,9 +1,8 @@
-// ModifyUsers.js
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from '@react-navigation/native';
-import UsersDataTable from '../../components/UserDataTable'; // Importa el componente con el nuevo nombre
+import UsersDataTable from '../../components/UserDataTable'; 
 import UserDetails from './UserDetails';
 import { Ionicons } from "@expo/vector-icons";
 import HeaderTitleBox from "../../components/HeaderTitleBox";
@@ -32,7 +31,6 @@ const ModifyUsersScreen = ({ navigation }) => {
         }
 
         const data = await response.json();
-        // Filter out users with 'admin' role directly after fetching
         const nonAdminUsers = data.filter(user => user.rol !== 'admin');
         setUsersData(nonAdminUsers);
         setLoading(false);
@@ -55,7 +53,7 @@ const ModifyUsersScreen = ({ navigation }) => {
       case 'empleado':
         return 'General Employee';
       default:
-        return rol; // Return original if no translation found
+        return rol; 
     }
   };
 
@@ -64,7 +62,7 @@ const ModifyUsersScreen = ({ navigation }) => {
       'Employee ID': user.ID,
       'Name': user.nombre,
       'Last Name': user.apellido_paterno,
-      'Role': translateRole(user.rol), // Translate the role here
+      'Role': translateRole(user.rol), 
     };
   });
 
@@ -90,8 +88,8 @@ const ModifyUsersScreen = ({ navigation }) => {
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <HeaderTitleBox iconName="user-edit" text="MODIFY USERS" />
-      <UsersDataTable // Usa el nuevo nombre del componente aquí
+      <HeaderTitleBox iconName="user-edit" text="MANAGE USERS" />
+      <UsersDataTable
         data={formattedUsersData}
         navigation={navigation}
         navigateTo="UserDetails"

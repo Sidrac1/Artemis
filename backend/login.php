@@ -19,7 +19,7 @@ error_log("login.php: db.php included");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method === 'POST') {
+if ($method === 'POST' || $method === 'PUT') {
     error_log("login.php: Method is POST");
     if (isset($_GET['action'])) {
         switch ($_GET['action']) {
@@ -29,13 +29,13 @@ if ($method === 'POST') {
             case 'getEmail':
                 getEmail();
                 break;
-            case 'updateEmail': // Nueva acción para actualizar el correo
+            case 'updateEmail':
                 updateEmail();
                 break;
-            case 'updatePassword': // Nueva acción para actualizar la contraseña
+            case 'updatePassword': 
                 updatePassword();
                 break;
-            case 'getEmployeeDetailsByRole': // Nueva acción para obtener detalles del empleado por rol
+            case 'getEmployeeDetailsByRole': 
                 getEmployeeDetailsByRole();
                 break;
             default:
@@ -49,6 +49,7 @@ if ($method === 'POST') {
     error_log("login.php: Method is not POST");
     echo json_encode(["message" => "Método no permitido"]);
 }
+
 
 function login() {
     global $pdo;
@@ -328,50 +329,52 @@ function getEmployeeDetailsByRole() {
 
     error_log("login.php: getEmployeeDetailsByRole() function started");
 
-    $data = json_decode(file_get_contents("php://input"));
-    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
-        error_log("login.php: JSON decode error in getEmployeeDetailsByRole: " . json_last_error_msg());
-        echo json_encode(["message" => "Error: Invalid JSON data"]);
+    $requestBody = file_get_contents("php://input");
+    error_log("login.php: Request Body: " . $requestBody);
+    $data = json_decode($requestBody);
+    error_log("login.php: Decoded JSON Data: " . print_r($data, true));
+
+    // Verificar si $data es un objeto y si tiene la propiedad id_empleado
+    if (!is_object($data) || !property_exists($data, 'id_empleado') || empty($data->id_empleado)) {
+        error_log("login.php: Employee ID missing or invalid in getEmployeeDetailsByRole");
+        echo json_encode(["message" => "Error: Employee ID is required"]);
         return;
     }
 
     $id_empleado = $data->id_empleado;
 
-    if (empty($id_empleado)) {
-        error_log("login.php: Employee ID missing in getEmployeeDetailsByRole");
-        echo json_encode(["message" => "Error: Employee ID is required"]);
-        return;
-    }
-
     try {
         $stmt = $pdo->prepare("
-            SELECT e.nombre, e.apellido_paterno, e.apellido_materno, e.genero, e.telefono, e.rol, l.correo
+            SELECT e.nombre, e.apellido_paterno, e.apellido_materno, e.genero, e.telefono, e.rol, l.correo, r.codigo_rfid
             FROM empleado e
             LEFT JOIN login l ON e.ID = l.id_empleado
+            LEFT JOIN rfid r ON e.ID = r.id_empleado
             WHERE e.ID = ?
         ");
         $stmt->execute([$id_empleado]);
-        $employee = $stmt->fetch(PDO::FETCH_ASSOC);
+        $employeeData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($employee) {
-            $rol = $employee['rol'];
+        if ($employeeData) {
+            $rol = $employeeData['rol'];
             $response = [
-                'ID' => $id_empleado,
-                'nombre' => $employee['nombre'],
-                'apellido_paterno' => $employee['apellido_paterno'],
-                'apellido_materno' => $employee['apellido_materno'],
-                'genero' => $employee['genero'],
+                'Employee ID' => $id_empleado,
+                'Name' => $employeeData['nombre'],
+                'Last Name' => $employeeData['apellido_paterno'],
+                'apellido_materno' => $employeeData['apellido_materno'],
+                'Gender' => $employeeData['genero'],
+                'Role' => $rol,
+                'RFID' => $employeeData['codigo_rfid'] ?? null // Use null coalescing operator
             ];
 
             if ($rol === 'supervisor') {
-                $response['email'] = $employee['correo'];
+                $response['correo'] = $employeeData['correo'];
                 // No se incluye 'telefono' para supervisor
             } elseif ($rol === 'empleado' || $rol === 'guardia') {
-                $response['telefono'] = $employee['telefono'];
-                // No se incluye 'email' ni 'contrasena' para empleado o guardia
+                $response['Phone'] = $employeeData['telefono'] ?? null; // Use null coalescing operator
+                // No se incluye 'correo' ni 'contrasena' para empleado o guardia
             }
 
-            error_log("login.php: Employee details for ID " . $id_empleado . " (Role: " . $rol . "): " . json_encode($response));
+            error_log("login.php: Employee details for ID " . $id_empleado . " (Role: " . $rol . ") with RFID: " . ($employeeData['codigo_rfid'] ?? 'N/A') . ": " . json_encode($response));
             echo json_encode($response);
 
         } else {

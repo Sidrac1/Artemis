@@ -66,7 +66,7 @@ const UsersScreen = () => {
     <View style={currentStyles.container} {...panResponder.panHandlers}>
       <View style={currentStyles.content}>
         <InfoButton title="CREATE USERS" iconName="user-plus" navigateTo="CreateUsers" />
-        <InfoButton title="MODIFY USERS" iconName="user-edit" navigateTo="ModifyUsers" />
+        <InfoButton title="MANAGE USERS" iconName="user-edit" navigateTo="ModifyUsers" />
       </View>
     </View>
   );

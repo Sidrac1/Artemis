@@ -55,12 +55,19 @@ const UsersDataTable = ({ data, navigation, navigateTo, idKey }) => {
         </Text>
       ))}
       {headers.length > 0 && (
-        <TouchableOpacity 
-          style={[styles.moreButton, { width: moreButtonWidth }]} 
-          onPress={() => navigation.navigate(navigateTo, item)}
-        >
-          <Text style={styles.moreButtonText}>More</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={[styles.moreButton, { width: moreButtonWidth }]}
+  onPress={() => {
+    const employeeId = item['Employee ID']; // <---- EXTRAE EL ID USANDO LA CLAVE CORRECTA
+    if (employeeId) {
+      navigation.navigate(navigateTo, { employeeId: employeeId }); // <---- PASA SOLO EL employeeId
+    } else {
+      console.warn('Employee ID not found in data item:', item);
+    }
+  }}
+>
+  <Text style={styles.moreButtonText}>More</Text>
+</TouchableOpacity>
       )}
     </View>
   );
@@ -111,11 +118,9 @@ const UsersDataTable = ({ data, navigation, navigateTo, idKey }) => {
               keyExtractor={(item, index) => index.toString()}
               style={styles.flatList}
               contentContainerStyle={styles.flatListContent}
-              // Scrolling properties
               showsVerticalScrollIndicator={true}
               scrollEventThrottle={16}
               decelerationRate="fast"
-              // Performance optimizations
               initialNumToRender={10}
               maxToRenderPerBatch={10}
               windowSize={21}
@@ -138,29 +143,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f1e6',
     borderRadius: 10,
     paddingVertical: 10,
-    paddingHorizontal: 20, // Más padding a los lados
+    paddingHorizontal: 20, 
     borderWidth: 2,
     borderColor: 'black',
     width: '100%',
-    height: 400, // Altura reducida
+    height: 400,
   },
   container: {
     backgroundColor: "#f9f9f9",
     paddingVertical: 10,
-    paddingHorizontal: 20, // Más padding a los lados
+    paddingHorizontal: 20, 
     borderRadius: 8,
     borderWidth: 1,
 
     borderColor: '#ccc',
     flex: 1,
-    overflow: 'hidden', // Ensures content doesn't spill outside
+    overflow: 'hidden', 
   },
   tableHeader: {
     backgroundColor: '#f0f0f0',
   },
   tableBody: {
     flex: 1,
-    height: 500, // Fixed height for the scrollable area
+    height: 500, 
   },
   filterContainer: {
     flexDirection: 'row',
