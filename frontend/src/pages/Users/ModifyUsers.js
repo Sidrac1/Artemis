@@ -1,21 +1,86 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from '@react-navigation/native';
-import DataTable from '../../components/DataTable';
+import UsersDataTable from '../../components/UserDataTable'; 
 import UserDetails from './UserDetails';
 import { Ionicons } from "@expo/vector-icons";
 import HeaderTitleBox from "../../components/HeaderTitleBox";
+import { API_IP } from '../../api/Config';
 
 const Stack = createStackNavigator();
 
 const ModifyUsersScreen = ({ navigation }) => {
-  const usersData = [
-    { "ID": 123, "NAME": "John", "LAST NAME": "Kennedy", "ROLE": "Supervisor", "RFID": "45327", "EMAIL": "john.kennedy@example.com", "GENDER": "Male", "PHONE": "123-456-7890" },
-    { "ID": 124, "NAME": "Jane", "LAST NAME": "Doe", "ROLE": "Guard", "RFID": "98765", "EMAIL": "jane.doe@example.com", "GENDER": "Female", "PHONE": "987-654-3210" },
-    { "ID": 125, "NAME": "Peter", "LAST NAME": "Parker", "ROLE": "Employee", "RFID": "11223", "EMAIL": "peter.parker@example.com", "GENDER": "Male", "PHONE": "555-123-4567" },
-    { "ID": 126, "NAME": "Mary", "LAST NAME": "Jane", "ROLE": "Supervisor", "RFID": "55667", "EMAIL": "mary.jane@example.com", "GENDER": "Female", "PHONE": "111-222-3333" },
-  ];
+  const [usersData, setUsersData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`http://${API_IP}/Artemis/backend/api/models/empleados.php`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const message = `An error occurred: ${response.status}`;
+          throw new Error(message);
+        }
+
+        const data = await response.json();
+        const nonAdminUsers = data.filter(user => user.rol !== 'admin');
+        setUsersData(nonAdminUsers);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const translateRole = (rol) => {
+    switch (rol) {
+      case 'supervisor':
+        return 'Supervisor';
+      case 'guardia':
+        return 'Guard';
+      case 'empleado':
+        return 'General Employee';
+      default:
+        return rol; 
+    }
+  };
+
+  const formattedUsersData = usersData.map(user => {
+    return {
+      'Employee ID': user.ID,
+      'Name': user.nombre,
+      'Last Name': user.apellido_paterno,
+      'Role': translateRole(user.rol), 
+    };
+  });
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text>Error loading users: {error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -23,9 +88,9 @@ const ModifyUsersScreen = ({ navigation }) => {
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-      <HeaderTitleBox iconName="user-edit" text="MODIFY USERS" />
-      <DataTable
-        data={usersData}
+      <HeaderTitleBox iconName="user-edit" text="MANAGE USERS" />
+      <UsersDataTable
+        data={formattedUsersData}
         navigation={navigation}
         navigateTo="UserDetails"
         idKey="ID"
@@ -65,6 +130,17 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
     color: "black",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
 });
 

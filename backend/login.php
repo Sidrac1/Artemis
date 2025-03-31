@@ -4,7 +4,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header('Content-Type: application/json');
 
-error_log("login.php: Starting execution"); 
+error_log("login.php: Starting execution");
 
 $dbFilePath = 'api/config/db.php';
 if (!file_exists($dbFilePath)) {
@@ -19,22 +19,42 @@ error_log("login.php: db.php included");
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method === 'POST') {
+if ($method === 'POST' || $method === 'PUT') {
     error_log("login.php: Method is POST");
-    if (isset($_GET['action']) && $_GET['action'] === 'checkEmail') {
-        checkEmail();
+    if (isset($_GET['action'])) {
+        switch ($_GET['action']) {
+            case 'checkEmail':
+                checkEmail();
+                break;
+            case 'getEmail':
+                getEmail();
+                break;
+            case 'updateEmail':
+                updateEmail();
+                break;
+            case 'updatePassword': 
+                updatePassword();
+                break;
+            case 'getEmployeeDetailsByRole': 
+                getEmployeeDetailsByRole();
+                break;
+            default:
+                login();
+                break;
+        }
     } else {
         login();
     }
 } else {
-    error_log("login.php: Method is not POST"); 
+    error_log("login.php: Method is not POST");
     echo json_encode(["message" => "Método no permitido"]);
 }
+
 
 function login() {
     global $pdo;
 
-    error_log("login.php: login() function started"); 
+    error_log("login.php: login() function started");
 
     $data = json_decode(file_get_contents("php://input"));
     if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
@@ -44,7 +64,7 @@ function login() {
     }
 
     $correo = $data->correo;
-    $contrasena = $data->contrasena; 
+    $contrasena = $data->contrasena;
 
     if (empty($correo) || empty($contrasena)) {
         error_log("login.php: Email or password missing");
@@ -63,19 +83,33 @@ function login() {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
-            if ($contrasena === $user['contrasena']) {
-                error_log("login.php: Login successful");
-                echo json_encode([
-                    "message" => "Inicio de sesión exitoso",
-                    "id_empleado" => $user['id_empleado'],
-                    "rol" => $user['rol']
-                ]);
+            $storedPassword = $user['contrasena'];
+            error_log("login.php: Contraseña almacenada para " . $correo . ": " . $storedPassword);
+
+            // Verificar si la contraseña almacenada parece ser un hash SHA256 (longitud típica)
+            if (strlen($storedPassword) === 64) {
+                error_log("login.php: Intentando verificación SHA256");
+                // Hashear la contraseña ingresada con SHA256
+                $hashedInputPassword = hash('sha256', $contrasena);
+                // Comparar el hash de la entrada con el hash almacenado
+                if ($hashedInputPassword === $storedPassword) {
+                    error_log("login.php: Login successful (SHA256 hashed password)");
+                    echo json_encode([
+                        "message" => "Inicio de sesión exitoso",
+                        "id_empleado" => $user['id_empleado'],
+                        "rol" => $user['rol']
+                    ]);
+                    return;
+                } else {
+                    error_log("login.php: Invalid credentials (SHA256 hash mismatch)");
+                    echo json_encode(["message" => "Credenciales incorrectas"]);
+                }
             } else {
-                error_log("login.php: Invalid credentials - password mismatch");
+                error_log("login.php: Contraseña almacenada no parece ser un hash SHA256");
                 echo json_encode(["message" => "Credenciales incorrectas"]);
             }
         } else {
-            error_log("login.php: Invalid credentials - user not found");
+            error_log("login.php: User not found");
             echo json_encode(["message" => "Credenciales incorrectas"]);
         }
     } catch (PDOException $e) {
@@ -88,7 +122,7 @@ function login() {
 function checkEmail() {
     global $pdo;
 
-    error_log("login.php: checkEmail() function started"); 
+    error_log("login.php: checkEmail() function started");
 
     $data = json_decode(file_get_contents("php://input"));
     if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
@@ -122,6 +156,235 @@ function checkEmail() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception in checkEmail: " . $e->getMessage());
         echo json_encode(["exists" => false, "message" => "Error: Database error"]);
+    }
+}
+
+function getEmail() {
+    global $pdo;
+
+    error_log("login.php: getEmail() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in getEmail: " . json_last_error_msg());
+        echo json_encode(["email" => null, "message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+
+    if (empty($id_empleado)) {
+        error_log("login.php: Employee ID missing in getEmail");
+        echo json_encode(["email" => null, "message" => "Error: Employee ID is required"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT correo FROM login WHERE id_empleado = ?
+        ");
+        $stmt->execute([$id_empleado]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result && isset($result['correo'])) {
+            error_log("login.php: Email found for employee ID " . $id_empleado . ": " . $result['correo']);
+            echo json_encode(["email" => $result['correo']]);
+        } else {
+            error_log("login.php: Email not found for employee ID " . $id_empleado);
+            echo json_encode(["email" => null, "message" => "Error: Email not found for this employee ID"]);
+        }
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in getEmail: " . $e->getMessage());
+        echo json_encode(["email" => null, "message" => "Error: Database error"]);
+    }
+}
+
+function updateEmail() {
+    global $pdo;
+
+    error_log("login.php: updateEmail() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in updateEmail: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+    $nuevo_correo = $data->nuevo_correo;
+
+    if (empty($id_empleado) || empty($nuevo_correo)) {
+        error_log("login.php: Employee ID or new email missing in updateEmail");
+        echo json_encode(["message" => "Error: Employee ID and new email are required"]);
+        return;
+    }
+
+    // Validar el formato del correo electrónico
+    if (!filter_var($nuevo_correo, FILTER_VALIDATE_EMAIL)) {
+        error_log("login.php: Invalid email format in updateEmail: " . $nuevo_correo);
+        echo json_encode(["message" => "Error: Invalid email format"]);
+        return;
+    }
+
+    try {
+        // Verificar si el nuevo correo ya existe para otro usuario
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM login WHERE correo = ? AND id_empleado != ?");
+        $stmtCheck->execute([$nuevo_correo, $id_empleado]);
+        $count = $stmtCheck->fetchColumn();
+
+        if ($count > 0) {
+            error_log("login.php: New email already exists for another user: " . $nuevo_correo);
+            echo json_encode(["message" => "Error: This email address is already in use"]);
+            return;
+        }
+
+        $stmtUpdate = $pdo->prepare("
+            UPDATE login
+            SET correo = ?
+            WHERE id_empleado = ?
+        ");
+        $stmtUpdate->execute([$nuevo_correo, $id_empleado]);
+
+        if ($stmtUpdate->rowCount() > 0) {
+            error_log("login.php: Email updated successfully for employee ID " . $id_empleado . " to " . $nuevo_correo);
+            echo json_encode(["message" => "Correo electrónico actualizado exitosamente"]);
+        } else {
+            error_log("login.php: Could not update email for employee ID " . $id_empleado . " (user not found or email already the same)");
+            echo json_encode(["message" => "Error: Could not update email"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in updateEmail: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error during email update"]);
+    }
+}
+
+function updatePassword() {
+    global $pdo;
+    error_log("login.php: updatePassword() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in updatePassword: " . json_last_error_msg());
+        echo json_encode(["message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+    $currentPassword = $data->currentPassword;
+    $newPassword = $data->newPassword;
+    $confirmPassword = $data->confirmPassword;
+
+    if (empty($id_empleado) || empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+        error_log("login.php: Required fields missing in updatePassword");
+        echo json_encode(["message" => "Error: All fields are required"]);
+        return;
+    }
+
+    if ($newPassword !== $confirmPassword) {
+        error_log("login.php: New password and confirm password do not match");
+        echo json_encode(["message" => "Error: New password and confirmation do not match"]);
+        return;
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT contrasena FROM login WHERE id_empleado = ?");
+        $stmt->execute([$id_empleado]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user) {
+            $storedPassword = $user['contrasena'];
+
+            if (hash('sha256', $currentPassword) === $storedPassword) {
+                $hashedNewPassword = hash('sha256', $newPassword);
+
+                $updateStmt = $pdo->prepare("UPDATE login SET contrasena = ? WHERE id_empleado = ?");
+                $updateResult = $updateStmt->execute([$hashedNewPassword, $id_empleado]);
+
+                if ($updateResult) {
+                    error_log("login.php: Password updated successfully" . $id_empleado);
+                    echo json_encode(["message" => "Password updated successfully"]);
+                } else {
+                    error_log("login.php: Could not update password for employee ID " . $id_empleado);
+                    echo json_encode(["message" => "Error: Could not update password"]);
+                }
+            } else {
+                error_log("login.php: Incorrect current password for employee ID " . $id_empleado);
+                echo json_encode(["message" => "Error: Incorrect current password"]);
+            }
+        } else {
+            error_log("login.php: User not found with ID " . $id_empleado);
+            echo json_encode(["message" => "Error: User not found"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in updatePassword: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error updating password"]);
+    }
+}
+
+function getEmployeeDetailsByRole() {
+    global $pdo;
+
+    error_log("login.php: getEmployeeDetailsByRole() function started");
+
+    $requestBody = file_get_contents("php://input");
+    error_log("login.php: Request Body: " . $requestBody);
+    $data = json_decode($requestBody);
+    error_log("login.php: Decoded JSON Data: " . print_r($data, true));
+
+    // Verificar si $data es un objeto y si tiene la propiedad id_empleado
+    if (!is_object($data) || !property_exists($data, 'id_empleado') || empty($data->id_empleado)) {
+        error_log("login.php: Employee ID missing or invalid in getEmployeeDetailsByRole");
+        echo json_encode(["message" => "Error: Employee ID is required"]);
+        return;
+    }
+
+    $id_empleado = $data->id_empleado;
+
+    try {
+        $stmt = $pdo->prepare("
+            SELECT e.nombre, e.apellido_paterno, e.apellido_materno, e.genero, e.telefono, e.rol, l.correo, r.codigo_rfid
+            FROM empleado e
+            LEFT JOIN login l ON e.ID = l.id_empleado
+            LEFT JOIN rfid r ON e.ID = r.id_empleado
+            WHERE e.ID = ?
+        ");
+        $stmt->execute([$id_empleado]);
+        $employeeData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($employeeData) {
+            $rol = $employeeData['rol'];
+            $response = [
+                'Employee ID' => $id_empleado,
+                'Name' => $employeeData['nombre'],
+                'Last Name' => $employeeData['apellido_paterno'],
+                'apellido_materno' => $employeeData['apellido_materno'],
+                'Gender' => $employeeData['genero'],
+                'Role' => $rol,
+                'RFID' => $employeeData['codigo_rfid'] ?? null // Use null coalescing operator
+            ];
+
+            if ($rol === 'supervisor') {
+                $response['correo'] = $employeeData['correo'];
+                // No se incluye 'telefono' para supervisor
+            } elseif ($rol === 'empleado' || $rol === 'guardia') {
+                $response['Phone'] = $employeeData['telefono'] ?? null; // Use null coalescing operator
+                // No se incluye 'correo' ni 'contrasena' para empleado o guardia
+            }
+
+            error_log("login.php: Employee details for ID " . $id_empleado . " (Role: " . $rol . ") with RFID: " . ($employeeData['codigo_rfid'] ?? 'N/A') . ": " . json_encode($response));
+            echo json_encode($response);
+
+        } else {
+            error_log("login.php: Employee not found with ID: " . $id_empleado);
+            echo json_encode(["message" => "Error: Employee not found"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in getEmployeeDetailsByRole: " . $e->getMessage());
+        echo json_encode(["message" => "Error: Database error fetching employee details"]);
     }
 }
 ?>

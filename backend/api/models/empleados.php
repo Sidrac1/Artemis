@@ -7,6 +7,8 @@ header('Content-Type: application/json');
 include_once '../config/db.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
+$path = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
+$segments = explode('/', $path);
 
 if ($method === 'OPTIONS') {
     http_response_code(200);
@@ -83,7 +85,7 @@ function createEmpleado() {
             $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM empleado WHERE telefono = ?");
             $stmt_check->execute([$telefono]);
             if ($stmt_check->fetchColumn() > 0) {
-                http_response_code(409); 
+                http_response_code(409);
                 echo json_encode(["message" => "Ya existe un empleado con este número de teléfono."]);
                 return;
             }
@@ -96,7 +98,7 @@ function createEmpleado() {
 
         if ($rol === 'supervisor' && $email !== null && $password !== null) {
             $stmt_login = $pdo->prepare("INSERT INTO login (id_empleado, correo, contrasena) VALUES (?, ?, ?)");
-            $stmt_login->execute([$empleado_id, $email, $password]); 
+            $stmt_login->execute([$empleado_id, $email, $password]);
         }
 
         echo json_encode(["message" => "Empleado creado"]);
@@ -124,7 +126,7 @@ function updateEmpleado() {
             $stmt_check = $pdo->prepare("SELECT COUNT(*) FROM empleado WHERE telefono = ? AND ID != ?");
             $stmt_check->execute([$telefono, $id]);
             if ($stmt_check->fetchColumn() > 0) {
-                http_response_code(409); 
+                http_response_code(409);
                 echo json_encode(["message" => "Ya existe otro empleado con este número de teléfono."]);
                 return;
             }
