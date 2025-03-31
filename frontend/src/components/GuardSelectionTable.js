@@ -1,25 +1,34 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, TextInput, ScrollView } from 'react-native';
+import React, { useState, useMemo } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, TextInput, ScrollView } from "react-native";
 
-const GuardSelectionTable = ({ data, onGuardSelect, onContinue, navigation }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGuard, setSelectedGuard] = useState(null);
+const GuardSelectionTable = ({ data, onGuardSelect, onContinue }) => {
+  const [searchTerm, setSearchTerm] = useState(""); // Término de búsqueda
+  const [selectedGuard, setSelectedGuard] = useState(null); // Estado interno para el guardia seleccionado
 
-  const headers = useMemo(() => data && data.length > 0 ? Object.keys(data[0]).filter(header => header !== 'ROLE') : [], [data]);
-  const screenWidth = Dimensions.get('window').width;
+  const headers = useMemo(
+    () => (data && data.length > 0 ? Object.keys(data[0]).filter((header) => header !== "ROLE") : []),
+    [data]
+  );
+
+  const screenWidth = Dimensions.get("window").width;
 
   const filteredData = useMemo(() => {
     if (!data) return [];
     const lowerSearchTerm = searchTerm.toLowerCase();
-    return data.filter(item => {
+    return data.filter((item) => {
       const fullName = `${item.Nombre || item.Name} ${item.Apellido || item.LastName}`.toLowerCase();
       return fullName.includes(lowerSearchTerm);
     });
   }, [data, searchTerm]);
 
+  const handleRowPress = (guard) => {
+    setSelectedGuard(guard); // Establece el guardia seleccionado
+    onGuardSelect(guard); // Notifica al componente padre sobre el guardia seleccionado
+  };
+
   const renderHeader = () => (
     <View style={styles.headerRow}>
-      {headers.map(header => (
+      {headers.map((header) => (
         <Text key={header} style={[styles.headerCell, { width: screenWidth / headers.length }]}>
           {header}
         </Text>
@@ -31,11 +40,11 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue, navigation }) =>
     <TouchableOpacity
       style={[
         styles.row,
-        selectedGuard && selectedGuard.ID === item.ID && styles.selectedRow,
+        selectedGuard && selectedGuard.ID === item.ID && styles.selectedRow, // Estilo visual cuando está seleccionado
       ]}
-      onPress={() => setSelectedGuard(item)}
+      onPress={() => handleRowPress(item)} // Seleccionar el guardia al presionar
     >
-      {headers.map(header => (
+      {headers.map((header) => (
         <Text key={header} style={[styles.cell, { width: screenWidth / headers.length }]}>
           {item[header[0]] || item[header]}
         </Text>
@@ -68,8 +77,8 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue, navigation }) =>
           <View style={styles.container}>
             <FlatList
               data={filteredData.length > 0 ? filteredData : [{ empty: true }]}
-              renderItem={({ item }) => item.empty ? renderEmptyList() : renderItem({ item })}
-              keyExtractor={(item, index) => item.empty ? 'empty' : index.toString()}
+              renderItem={({ item }) => (item.empty ? renderEmptyList() : renderItem({ item }))}
+              keyExtractor={(item, index) => (item.empty ? "empty" : index.toString())}
               ListHeaderComponent={renderHeader}
               stickyHeaderIndices={[0]}
               style={styles.flatList}
@@ -87,12 +96,16 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue, navigation }) =>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.continueButton} onPress={() => {
-          if (selectedGuard) {
-            onGuardSelect(selectedGuard);
-            onContinue(navigation);
-          }
-        }}>
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={() => {
+            if (selectedGuard) {
+              onContinue(selectedGuard); // Pasa el guardia seleccionado al continuar
+            } else {
+              console.error("No guard selected.");
+            }
+          }}
+        >
           <Text style={styles.continueButtonText}>CONTINUE</Text>
         </TouchableOpacity>
       </View>
@@ -103,23 +116,23 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue, navigation }) =>
 const styles = StyleSheet.create({
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
     paddingTop: 20,
   },
   mainContainer: {
-    alignSelf: 'center',
-    width: '80%',
+    alignSelf: "center",
+    width: "80%",
     marginVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   outerContainer: {
-    backgroundColor: '#f5f1e6',
+    backgroundColor: "#f5f1e6",
     borderRadius: 20,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#d1d1d1',
-    width: '100%',
-    shadowColor: '#000',
+    borderColor: "#d1d1d1",
+    width: "100%",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -127,23 +140,23 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "flex-start",
     marginBottom: 10,
     paddingHorizontal: 10,
-    width: '100%',
+    width: "100%",
   },
   searchContainer: {
-    flexDirection: 'column',
+    flexDirection: "column",
     marginRight: 10,
   },
   filterLabel: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 5,
   },
   searchInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     padding: 8,
     width: 200,
   },
@@ -151,41 +164,41 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     padding: 10,
     height: 300,
   },
   headerRow: {
-    flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
+    flexDirection: "row",
+    backgroundColor: "#f0f0f0",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
     paddingVertical: 12,
   },
   headerCell: {
     padding: 10,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
   },
   cell: {
     padding: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   flatList: {
     marginTop: 10,
   },
   continueButton: {
-    backgroundColor: '#e6ddcc',
+    backgroundColor: "#e6ddcc",
     padding: 15,
     borderRadius: 25,
     marginTop: 20,
-    alignSelf: 'center',
-    shadowColor: '#000',
+    alignSelf: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -193,20 +206,20 @@ const styles = StyleSheet.create({
   },
   continueButtonText: {
     fontSize: 16,
-    color: 'black',
-    fontWeight: 'bold',
+    color: "black",
+    fontWeight: "bold",
   },
   selectedRow: {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: "#e0e0e0", // Estilo que indica el guardia seleccionado
   },
   emptyListContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   noResultsText: {
     fontSize: 16,
-    color: 'gray',
+    color: "gray",
   },
 });
 

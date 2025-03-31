@@ -1,38 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import HeaderTitleBox from "../../components/HeaderTitleBox";
 import GuardSelectionTable from "../../components/GuardSelectionTable";
+import { getGuardias } from "../../api/GuardiasSeguridad";
 
 const CreatePatrol = () => {
   const navigation = useNavigation();
   const [selectedGuard, setSelectedGuard] = useState(null);
+  const [guardias, setGuardias] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const GuardiasData = await getGuardias();
+        setGuardias(GuardiasData);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleGuardSelect = (guard) => {
-    setSelectedGuard(guard);
-    console.log("Selected Guard:", guard);
+    console.clear(); // Limpia la consola cada vez que se selecciona un guardia
+    console.log("Selected Guard:", guard); // Registra el guardia seleccionado
+    setSelectedGuard(guard); // Actualiza el estado del guardia seleccionado
   };
 
-  const handleContinue = (navigation) => { // Recibe navigation como argumento
+  const handleContinue = () => {
     if (selectedGuard) {
+      // Esperamos que el estado se haya actualizado correctamente
       console.log("Continue with selected guard:", selectedGuard);
-      // Navegar a CreateRoute y pasar el guardia seleccionado como parámetro.
-      navigation.navigate("CreateRoute", { selectedGuard: selectedGuard });
+      navigation.navigate("CreateRoute", { selectedGuard }); // Pasamos el guardia como parámetro
     } else {
       console.log("No guard selected.");
-      // Puedes agregar aquí una lógica para manejar el caso en que no se ha seleccionado un guardia.
     }
   };
-
-  const tableData = [
-    { ID: 1, Name: "John", LastName: "Doe", Gender: "Male", Phone: "555-1234" },
-    { ID: 2, Name: "Jane", LastName: "Smith", Gender: "Female", Phone: "555-5678" },
-    { ID: 3, Name: "Robert", LastName: "Johnson", Gender: "Male", Phone: "555-9012" },
-    { ID: 4, Name: "Emily", LastName: "Williams", Gender: "Female", Phone: "555-3456" },
-    { ID: 5, Name: "Michael", LastName: "Brown", Gender: "Male", Phone: "555-7890" },
-    { ID: 6, Name: "Jessica", LastName: "Davis", Gender: "Female", Phone: "555-2345" },
-  ];
 
   return (
     <View style={styles.container}>
@@ -44,9 +50,9 @@ const CreatePatrol = () => {
 
       <View style={styles.content}>
         <GuardSelectionTable
-          data={tableData}
+          data={guardias}
           onGuardSelect={handleGuardSelect}
-          onContinue={() => handleContinue(navigation)} // Pasa navigation a handleContinue
+          onContinue={handleContinue} // No pasamos navigation directamente, usamos el estado actualizado
         />
       </View>
     </View>

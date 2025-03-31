@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start', // Cambiado a flex-start
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#faf9f9',
     // paddingTop: height * 0.01, // Eliminado paddingTop
   },
   outerContainer: {

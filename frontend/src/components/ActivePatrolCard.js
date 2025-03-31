@@ -5,6 +5,11 @@ import { Ionicons } from '@expo/vector-icons';
 const { width } = Dimensions.get('window');
 
 const ActivePatrolCard = ({ patrolData }) => {
+  // Transformar el campo 'sectors' a un formato "A -> B -> C"
+  const formattedSectors = patrolData.sectors
+    .split(' ') // Dividir los sectores por espacios
+    .join(' -> '); // Unirlos con " -> "
+
   return (
     <View style={styles.container}>
       <View style={styles.outerContainer}>
@@ -14,7 +19,7 @@ const ActivePatrolCard = ({ patrolData }) => {
             <Text style={styles.fieldText}>ROUTE NAME</Text>
             <TextInput
               style={styles.input}
-              value={patrolData.routeName}
+              value={patrolData.nombre}
               editable={false}
             />
           </View>
@@ -24,7 +29,7 @@ const ActivePatrolCard = ({ patrolData }) => {
             <Text style={styles.fieldText}>GUARD</Text>
             <TextInput
               style={styles.input}
-              value={patrolData.guardName}
+              value={patrolData.guard}
               editable={false}
             />
           </View>
@@ -35,7 +40,7 @@ const ActivePatrolCard = ({ patrolData }) => {
               <Text style={styles.fieldText}>START</Text>
               <TextInput
                 style={[styles.input, styles.dateInput]}
-                value={patrolData.startDate}
+                value={patrolData.start}
                 editable={false}
               />
             </View>
@@ -43,7 +48,7 @@ const ActivePatrolCard = ({ patrolData }) => {
               <Text style={[styles.fieldText, styles.endText]}>END</Text> 
               <TextInput
                 style={[styles.input, styles.dateInput]}
-                value={patrolData.endDate}
+                value={patrolData.end}
                 editable={false}
               />
             </View>
@@ -54,7 +59,7 @@ const ActivePatrolCard = ({ patrolData }) => {
             <Text style={styles.fieldText}>SECTORS</Text>
             <TextInput
               style={styles.input}
-              value={patrolData.sectors}
+              value={formattedSectors}  // Mostrar los sectores formateados
               editable={false}
             />
           </View>
@@ -77,7 +82,7 @@ const ActivePatrolCard = ({ patrolData }) => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#faf9f9',
     marginTop: 30,
     paddingHorizontal: 10,
   },
@@ -89,7 +94,7 @@ const styles = StyleSheet.create({
     borderColor: 'black',
   },
   card: {
-    width: width * 0.7,
+    width: width * 0.5,
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 8,

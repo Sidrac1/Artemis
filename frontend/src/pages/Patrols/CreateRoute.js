@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import React from "react";
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import HeaderTitleBox from "../../components/HeaderTitleBox";
@@ -8,34 +8,28 @@ import RouteForm from "../../components/RouteForm"; // Importa RouteForm
 const CreateRoute = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { selectedGuard } = route.params || {};
-
-  const handleCreateRoute = (formData) => {
-    // Aquí puedes agregar la lógica para crear la ruta con el guardia seleccionado y los detalles de la ruta.
-    console.log("Creating route with guard:", selectedGuard);
-    console.log("Route Data:", formData);
-    // Navegar de regreso o a la siguiente pantalla según sea necesario.
-    navigation.goBack();
-  };
+  const { selectedGuard } = route.params || {}; // Recibe el guardia seleccionado
 
   return (
     <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
       <HeaderTitleBox iconName="map" text="CREATE ROUTE" />
 
-      <View style={styles.content}>
-        {selectedGuard && (
-          <Text style={styles.guardInfo}>
-            Guard: {selectedGuard.Name} {selectedGuard.LastName}
-          </Text>
+        {selectedGuard ? (
+          <>
+            <Text style={styles.guardInfo}>
+              Guard: {selectedGuard.nombre} {selectedGuard.apellido_paterno} {selectedGuard.apellido_materno}
+            </Text>
+            <RouteForm selectedGuard={selectedGuard} />
+          </>
+        ) : (
+          <Text style={styles.errorText}>No guard selected. Please go back and select a guard.</Text>
         )}
-
-        {/* Reemplaza los TextInput y el botón con RouteForm */}
-        <RouteForm onSubmit={handleCreateRoute} />
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -61,14 +55,19 @@ const styles = StyleSheet.create({
     color: "black",
   },
   content: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   guardInfo: {
     fontSize: 18,
-    marginBottom: 20,
+    marginVertical: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 

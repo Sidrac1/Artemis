@@ -212,7 +212,7 @@ const UserForm = ({ onSubmit }) => {
                     )}
                     {errors.genero && <Text style={styles.errorText}>{errors.genero}</Text>}
 
-                    {showPhoneNumber && (
+                    {showPhoneNumber ? (
                         <View style={{ marginBottom: errors.telefono || phoneExistsError ? 35 : 10 }}>
                             <Text style={styles.fieldLabel}>Phone number</Text>
                             <View style={mergedStyles.phoneInputContainer}>
@@ -228,9 +228,9 @@ const UserForm = ({ onSubmit }) => {
                             {phoneExistsError && <Text style={styles.errorText}>{phoneExistsError}</Text>}
                             {isCheckingPhone && <Text style={styles.infoText}>Verifying phone...</Text>}
                         </View>
-                    )}
+                    ) : null}
 
-                    {showEmailAndPassword && (
+                    {showEmailAndPassword ? (
                         <>
                             <Text style={styles.fieldLabel}>Email</Text>
                             <TextInput
@@ -254,15 +254,12 @@ const UserForm = ({ onSubmit }) => {
                                     secureTextEntry={!isPasswordVisible}
                                 />
                                 <TouchableOpacity style={mergedStyles.eyeIcon} onPress={togglePasswordVisibility}>
-                                    <Icon
-                                        size={20}
-                                        color="#aaa"
-                                    />
+                                <Icon name={isPasswordVisible ? "eye-off" : "eye"} size={20} color="#aaa" />
                                 </TouchableOpacity>
                             </View>
                             {showPasswordError && errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
                         </>
-                    )}
+                    ) : null}
 
                     <TouchableOpacity style={styles.registerButton} onPress={handleSubmit}>
                         <Text style={styles.registerButtonText}>Register</Text>

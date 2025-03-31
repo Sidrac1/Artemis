@@ -2,14 +2,23 @@ import { getApiUrl } from "./Config.js";
 
 const API_URL = getApiUrl("rondas");
 
-export const getRondas = async () => {
+// Obtener rondas (o una ronda específica si se proporciona un código)
+export const getRondas = async (codigo = null) => {
   try {
-    const response = await fetch(API_URL, {
+    let url = API_URL;
+    
+    // Si se proporciona un código, se agrega como parámetro a la URL
+    if (codigo) {
+      url += `?codigo=${codigo}`;
+    }
+    
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
+    
     return await response.json();
   } catch (error) {
     console.error("Error obteniendo rondas:", error);
