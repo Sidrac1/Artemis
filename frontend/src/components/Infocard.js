@@ -10,7 +10,7 @@ const Infocard = ({ title = "Template", number = 0, iconName = "users" }) => {
       <View style={isMobile ? styles.mobileInnerCard : styles.card}>
         <Text style={isMobile ? styles.mobileTitle : styles.title}>{title.toUpperCase()}</Text>
         <View style={isMobile ? styles.mobileContent : styles.content}>
-          {!isMobile && <Icon name={iconName} size={80} color="black" />}
+          {!isMobile && <Icon name={iconName} size={60} color="black" />}
           <Text style={isMobile ? styles.mobileNumber : styles.number}>{number}</Text>
         </View>
       </View>
@@ -47,14 +47,13 @@ const styles = StyleSheet.create({
   },
   content: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "60%",
+    alignItems: "center"
   },
   number: {
-    fontSize: 80,
+    fontSize: 60,
     fontWeight: "bold",
     color: "#000",
+    paddingLeft: 20,
   },
   
   // Estilos para versión móvil

@@ -44,10 +44,6 @@ const CreateUsers = () => {
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.backText}></Text>
-      </View>
-
       <HeaderTitleBox iconName="user-plus" text="CREATE USER" />
       <UserForm roles={['SUPERVISOR', 'GUARD', 'EMPLOYEE']} onSubmit={handleRegister} />
     </View>

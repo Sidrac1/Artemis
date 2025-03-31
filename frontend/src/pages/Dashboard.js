@@ -29,11 +29,11 @@ const Dashboard = () => {
         const empleadosData = await getEmpleados();
 
         // Filtrar los supervisores
-        const supervisoresCount = empleadosData.filter(emp => emp.puesto === "Supervisor").length;
+        const supervisoresCount = empleadosData.filter(emp => emp.rol === "supervisor").length;
         setSupervisores(supervisoresCount);
 
         // Filtrar los guardias
-        const guardiasCount = empleadosData.filter(emp => emp.puesto === "Guardia").length;
+        const guardiasCount = empleadosData.filter(emp => emp.rol === "guard").length;
         setGuardias(guardiasCount);
 
         // todos los empleados

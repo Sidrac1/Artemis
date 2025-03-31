@@ -68,42 +68,6 @@ const AccessesHistory = () => {
   );
 };
 
-const AccesesHistory = [
-  {
-    area: "Tool Room",
-    fecha: "03/06/2025",
-    time: "14:25",
-    name: "Erick Alvarez",
-    role: "Supervisor",
-    rfid: "45482",
-  },
-  {
-    area: "Servers Room",
-    fecha: "06/07/2025",
-    time: "14:25",
-    name: "Erick Alvarez",
-    role: "Employees",
-    rfid: "45482",
-  },
-  {
-    area: "Meeting Room",
-    fecha: "04/05/2025",
-    time: "14:25",
-    name: "Angel Gameros",
-    role: "Employees",
-    rfid: "45482",
-  },
-  {
-    area: "QC Room",
-    fecha: "14/07/2025",
-    time: "14:25",
-    name: "Manuel Osuna",
-    role: "Supervisor",
-    rfid: "45482",
-  },
-];
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
