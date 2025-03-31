@@ -625,12 +625,14 @@ const styles = StyleSheet.create({
         position: "absolute",
         top: 16,
         left: 20,
-        backgroundColor: 'transparent',
-        zIndex: 10,
+        backgroundColor: "#ddd",
+        borderRadius: 8,
+        zIndex: 999,
     },
     backText: {
         marginLeft: 5,
         fontSize: 16,
+        color: "black",
     },
     headerContainer: {
         width: '100%',
