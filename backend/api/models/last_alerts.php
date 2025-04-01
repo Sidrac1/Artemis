@@ -23,21 +23,19 @@ function getLastAlerts() {
     // Consulta SQL para obtener las últimas alertas
     $stmt = $pdo->query("
         SELECT 
-            ar.nombre AS area, 
-            DATE_FORMAT(la.fecha, '%d/%m/%Y') AS fecha,
-            la.hora,
-            al.descripcion
-        FROM 
-            log_acceso la
-        JOIN 
-            acceso a ON la.id_registro = a.id_registro
-        JOIN 
-            area ar ON a.codigo_area = ar.codigo_area
-        JOIN 
-            alerta al ON la.id_registro = al.id_registro
-        ORDER BY 
-            al.id DESC
-        LIMIT 10;
+    ar.nombre AS area, 
+    DATE_FORMAT(a.fecha, '%d/%m/%Y') AS fecha,
+    a.hora,
+    al.descripcion
+FROM 
+    acceso a
+JOIN 
+    area ar ON a.codigo_area = ar.codigo_area
+JOIN 
+    alerta al ON a.ID = al.id_registro
+ORDER BY 
+    al.id DESC
+LIMIT 10;
     ");
     
     $last_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);

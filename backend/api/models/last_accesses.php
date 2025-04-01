@@ -24,13 +24,12 @@ function getLastAccesses() {
     $stmt = $pdo->query("
         SELECT 
             ar.nombre AS area,
-            DATE_FORMAT(la.fecha, '%d/%m/%Y') AS fecha,
+            DATE_FORMAT(ac.fecha, '%d/%m/%Y') AS fecha,
             TIME(ac.hora_acceso) AS tiempo,
             CONCAT(emp.nombre, ' ', emp.apellido_paterno, ' ', emp.apellido_materno) AS nombre,
             pu.nombre_puesto AS rol
         FROM acceso ac
         JOIN area ar ON ac.codigo_area = ar.codigo_area
-        JOIN log_acceso la ON ac.id_registro = la.id_registro
         JOIN empleado_acceso ea ON ac.ID = ea.id_acceso
         JOIN empleado emp ON ea.id_empleado = emp.ID
         JOIN puesto pu ON emp.codigo_puesto = pu.codigo
