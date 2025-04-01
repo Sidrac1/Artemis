@@ -20,7 +20,7 @@ error_log("login.php: db.php included");
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST' || $method === 'PUT') {
-    error_log("login.php: Method is POST or PUT");
+    error_log("login.php: Method is POST");
     if (isset($_GET['action'])) {
         switch ($_GET['action']) {
             case 'checkEmail':
@@ -32,10 +32,10 @@ if ($method === 'POST' || $method === 'PUT') {
             case 'updateEmail':
                 updateEmail();
                 break;
-            case 'updatePassword':
+            case 'updatePassword': 
                 updatePassword();
                 break;
-            case 'getEmployeeDetailsByRole':
+            case 'getEmployeeDetailsByRole': 
                 getEmployeeDetailsByRole();
                 break;
             default:
@@ -46,7 +46,7 @@ if ($method === 'POST' || $method === 'PUT') {
         login();
     }
 } else {
-    error_log("login.php: Method is not POST or PUT");
+    error_log("login.php: Method is not POST");
     echo json_encode(["message" => "Método no permitido"]);
 }
 
@@ -86,17 +86,26 @@ function login() {
             $storedPassword = $user['contrasena'];
             error_log("login.php: Contraseña almacenada para " . $correo . ": " . $storedPassword);
 
-            // Comparación de contraseñas SIN hashear
-            if ($contrasena === $storedPassword) {
-                error_log("login.php: Login successful (unhashed password)");
-                echo json_encode([
-                    "message" => "Inicio de sesión exitoso",
-                    "id_empleado" => $user['id_empleado'],
-                    "rol" => $user['rol']
-                ]);
-                return;
+            // Verificar si la contraseña almacenada parece ser un hash SHA256 (longitud típica)
+            if (strlen($storedPassword) === 64) {
+                error_log("login.php: Intentando verificación SHA256");
+                // Hashear la contraseña ingresada con SHA256
+                $hashedInputPassword = hash('sha256', $contrasena);
+                // Comparar el hash de la entrada con el hash almacenado
+                if ($hashedInputPassword === $storedPassword) {
+                    error_log("login.php: Login successful (SHA256 hashed password)");
+                    echo json_encode([
+                        "message" => "Inicio de sesión exitoso",
+                        "id_empleado" => $user['id_empleado'],
+                        "rol" => $user['rol']
+                    ]);
+                    return;
+                } else {
+                    error_log("login.php: Invalid credentials (SHA256 hash mismatch)");
+                    echo json_encode(["message" => "Credenciales incorrectas"]);
+                }
             } else {
-                error_log("login.php: Invalid credentials (unhashed password mismatch)");
+                error_log("login.php: Contraseña almacenada no parece ser un hash SHA256");
                 echo json_encode(["message" => "Credenciales incorrectas"]);
             }
         } else {
@@ -287,16 +296,14 @@ function updatePassword() {
         if ($user) {
             $storedPassword = $user['contrasena'];
 
-            // Verificar la contraseña actual SIN hashear
-            if ($currentPassword === $storedPassword) {
-                // No se aplica hashing a la nueva contraseña (INSEGURO)
-                $newHashedPassword = $newPassword;
+            if (hash('sha256', $currentPassword) === $storedPassword) {
+                $hashedNewPassword = hash('sha256', $newPassword);
 
                 $updateStmt = $pdo->prepare("UPDATE login SET contrasena = ? WHERE id_empleado = ?");
-                $updateResult = $updateStmt->execute([$newHashedPassword, $id_empleado]);
+                $updateResult = $updateStmt->execute([$hashedNewPassword, $id_empleado]);
 
                 if ($updateResult) {
-                    error_log("login.php: Password updated successfully for employee ID " . $id_empleado . " (UNHASHED)");
+                    error_log("login.php: Password updated successfully" . $id_empleado);
                     echo json_encode(["message" => "Password updated successfully"]);
                 } else {
                     error_log("login.php: Could not update password for employee ID " . $id_empleado);

@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'gameros';
+$dbname = 'artemisdb';
 $username = 'root'; 
 $password = ''; 
 
