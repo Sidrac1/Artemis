@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderColor: "black",
   },
   card: {
-    width: width * 0.8,
+    width: width * 0.25,
     padding: 20,
     backgroundColor: "white",
     borderRadius: 8,
@@ -297,35 +297,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     position: "relative",
-    width: width * 0.6,
-    height: width * 0.6 * (300 / 400),
   },
   houseImage: {
-    width: "100%",
-    height: "100%",
+    width: width * 0.14,
+    height: width * 0.14,
   },
   sectorLabel: {
     position: "absolute",
     alignItems: "center",
     padding: 5,
     borderRadius: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   topLeft: {
-    top: "10%",
-    left: "10%",
+    bottom: "0%",
+    left: "50%",
   },
   topRight: {
-    top: "10%",
-    right: "10%",
+    top: "22%",
+    left: "12%",
   },
   bottomLeft: {
-    bottom: "10%",
-    left: "10%",
+    top: "2%",
+    right: "40%",
   },
   bottomRight: {
-    bottom: "10%",
-    right: "10%",
+    right: "12%",
+    top: "28%",
   },
   sectorName: {
     fontSize: 12,
@@ -345,40 +342,22 @@ const styles = StyleSheet.create({
   },
   dateTimeContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
-    justifyContent: 'space-between',
   },
   dateTimeText: {
-    fontSize: 14,
-    marginRight: 5,
-  },
-  datePickerButton: {
-    flex: 0.35,
+    flex: 1,
     height: 40,
     borderColor: "#ccc",
     borderWidth: 1,
+    paddingHorizontal: 8,
     borderRadius: 6,
-    justifyContent: "center",
-    alignItems: "center",
+    fontSize: 14,
     backgroundColor: "#f9f9f9",
     marginRight: 5,
-  },
-  datePickerText: {
-    fontSize: 14,
-  },
-  timePickerButton: {
-    flex: 0.35,
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 6,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f9f9f9",
-  },
-  timePickerText: {
-    fontSize: 14,
+    textAlign: "center",
+    textAlignVertical: "center",
+    lineHeight: 40,
   },
   finishButton: {
     backgroundColor: "#e6ddcc",
@@ -386,16 +365,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 20,
     alignSelf: "center",
-    marginTop: 20,
   },
   finishButtonText: {
     fontSize: 16,
     fontWeight: "bold",
     color: "black",
   },
-  sectorSelected: {
-    backgroundColor: 'rgba(0, 128, 0, 0.7)', // Ejemplo de color cuando está seleccionado
-  },
 });
-
 export default RouteForm;
