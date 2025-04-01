@@ -1,15 +1,14 @@
+// GuardSelectionTable.js
 import React, { useState, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, TextInput, ScrollView } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, TextInput } from "react-native";
 
 const GuardSelectionTable = ({ data, onGuardSelect, onContinue }) => {
-  const [searchTerm, setSearchTerm] = useState(""); // Término de búsqueda
-  const [selectedGuard, setSelectedGuard] = useState(null); // Estado interno para el guardia seleccionado
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGuard, setSelectedGuard] = useState(null);
   const headers = useMemo(
     () => (data && data.length > 0 ? Object.keys(data[0]).filter((header) => header !== "ROLE") : []),
     [data]
   );
-
   const screenWidth = Dimensions.get("window").width;
 
   const filteredData = useMemo(() => {
@@ -22,8 +21,8 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue }) => {
   }, [data, searchTerm]);
 
   const handleRowPress = (guard) => {
-    setSelectedGuard(guard); // Establece el guardia seleccionado
-    onGuardSelect(guard); // Notifica al componente padre sobre el guardia seleccionado
+    setSelectedGuard(guard);
+    onGuardSelect(guard);
   };
 
   const renderHeader = () => (
@@ -40,9 +39,9 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue }) => {
     <TouchableOpacity
       style={[
         styles.row,
-        selectedGuard && selectedGuard.ID === item.ID && styles.selectedRow, // Estilo visual cuando está seleccionado
+        selectedGuard && selectedGuard.ID === item.ID && styles.selectedRow,
       ]}
-      onPress={() => handleRowPress(item)} // Seleccionar el guardia al presionar
+      onPress={() => handleRowPress(item)}
     >
       {headers.map((header) => (
         <Text key={header} style={[styles.cell, { width: screenWidth / headers.length }]}>
@@ -58,67 +57,65 @@ const GuardSelectionTable = ({ data, onGuardSelect, onContinue }) => {
     </View>
   );
 
-  return (
-    <ScrollView contentContainerStyle={styles.scrollViewContent}>
-      <View style={styles.mainContainer}>
-        <View style={styles.filterContainer}>
-          <View style={styles.searchContainer}>
-            <Text style={styles.filterLabel}>Search</Text>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="SEARCH"
-              value={searchTerm}
-              onChangeText={setSearchTerm}
-            />
-          </View>
-        </View>
-
-        <View style={[styles.outerContainer, { marginTop: 10 }]}>
-          <View style={styles.container}>
-            <FlatList
-              data={filteredData.length > 0 ? filteredData : [{ empty: true }]}
-              renderItem={({ item }) => (item.empty ? renderEmptyList() : renderItem({ item }))}
-              keyExtractor={(item, index) => (item.empty ? "empty" : index.toString())}
-              ListHeaderComponent={renderHeader}
-              stickyHeaderIndices={[0]}
-              style={styles.flatList}
-              initialNumToRender={10}
-              maxToRenderPerBatch={10}
-              windowSize={11}
-              removeClippedSubviews={true}
-              keyboardShouldPersistTaps="handled"
-              getItemLayout={(data, index) => ({
-                length: 44,
-                offset: 44 * index,
-                index,
-              })}
-            />
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={styles.continueButton}
-          onPress={() => {
-            if (selectedGuard) {
-              onContinue(selectedGuard); // Pasa el guardia seleccionado al continuar
-            } else {
-              console.error("No guard selected.");
-            }
-          }}
-        >
-          <Text style={styles.continueButtonText}>CONTINUE</Text>
-        </TouchableOpacity>
+  const ListHeader = () => (
+    <View style={styles.filterContainer}>
+      <View style={styles.searchContainer}>
+        <Text style={styles.filterLabel}>Search</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="SEARCH"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+        />
       </View>
-    </ScrollView>
+    </View>
+  );
+
+  const ListFooter = () => (
+    <TouchableOpacity
+      style={styles.continueButton}
+      onPress={() => {
+        if (selectedGuard) {
+          onContinue(selectedGuard);
+        } else {
+          console.error("No guard selected.");
+        }
+      }}
+    >
+      <Text style={styles.continueButtonText}>CONTINUE</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.mainContainer}>
+      <View style={[styles.outerContainer, { marginTop: 10 }]}>
+        <View style={styles.container}>
+          <FlatList
+            data={filteredData.length > 0 ? filteredData : [{ empty: true }]}
+            renderItem={({ item }) => (item.empty ? renderEmptyList() : renderItem({ item }))}
+            keyExtractor={(item, index) => (item.empty ? "empty" : index.toString())}
+            ListHeaderComponent={ListHeader}
+            ListFooterComponent={ListFooter}
+            stickyHeaderIndices={[]}
+            style={styles.flatList}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={11}
+            removeClippedSubviews={true}
+            keyboardShouldPersistTaps="handled"
+            getItemLayout={(data, index) => ({
+              length: 44,
+              offset: 44 * index,
+              index,
+            })}
+          />
+        </View>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollViewContent: {
-    flexGrow: 1,
-    justifyContent: "flex-start",
-    paddingTop: 20,
-  },
   mainContainer: {
     alignSelf: "center",
     width: "80%",
@@ -210,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   selectedRow: {
-    backgroundColor: "#e0e0e0", // Estilo que indica el guardia seleccionado
+    backgroundColor: "#e0e0e0",
   },
   emptyListContainer: {
     flex: 1,
