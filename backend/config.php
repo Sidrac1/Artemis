@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $host = 'localhost';
-$dbname = 'artemisdb';
+$dbname = 'artemisoficial';
 $username = 'root';
 $password = '';
 
