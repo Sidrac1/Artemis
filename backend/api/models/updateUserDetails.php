@@ -188,6 +188,7 @@ function getEmployeeDetailsByRole($employeeId) {
 }
 
 
+
 function updateUserDetailsByRole() {
     global $pdo;
     error_log("updateUserDetails.php: updateUserDetailsByRole() function started");
@@ -221,6 +222,14 @@ function updateUserDetailsByRole() {
                             error_log("updateUserDetails.php: Error - Invalid email format for supervisor ID: " . $id_empleado);
                             return;
                         }
+                        // **Validación de correo electrónico existente**
+                        $stmtCheckCorreo = $pdo->prepare("SELECT COUNT(*) FROM login WHERE correo = ? AND id_empleado != ?");
+                        $stmtCheckCorreo->execute([$correo, $id_empleado]);
+                        if ($stmtCheckCorreo->fetchColumn() > 0) {
+                            echo json_encode(["message" => "Error: This email address is already in use"]);
+                            error_log("updateUserDetails.php: Error - Email already in use: " . $correo);
+                            return;
+                        }
                         $stmtCorreo = $pdo->prepare("UPDATE login SET correo = ? WHERE id_empleado = ?");
                         if ($stmtCorreo->execute([$correo, $id_empleado])) {
                             error_log("updateUserDetails.php: Supervisor email updated for ID: " . $id_empleado . " to: " . $correo);
@@ -232,8 +241,8 @@ function updateUserDetailsByRole() {
                     }
                     if (isset($data['newPassword'])) {
                         $newPassword = trim($data['newPassword']);
-                        if (strlen($newPassword) < 6) {
-                            echo json_encode(["message" => "Error: Password must be at least 6 characters long"]);
+                        if (strlen($newPassword) < 8) { // Se aumentó la longitud mínima a 8 caracteres (como se sugirió en el frontend)
+                            echo json_encode(["message" => "Error: Password must be at least 8 characters long"]);
                             error_log("updateUserDetails.php: Error - Password too short for supervisor ID: " . $id_empleado);
                             return;
                         }
@@ -253,7 +262,6 @@ function updateUserDetailsByRole() {
                             echo json_encode(["message" => "Error: RFID cannot be empty"]);
                             return;
                         }
-
 
                         $stmtCheckRFID = $pdo->prepare("SELECT id_RFID FROM rfid WHERE codigo_rfid = ?");
                         $stmtCheckRFID->execute([$rfid]);
@@ -276,13 +284,27 @@ function updateUserDetailsByRole() {
                     }
                     break;
                 case 'empleado':
+                case 'guardia':
                     if (isset($data['telefono'])) {
                         $telefono = trim($data['telefono']);
+                        if (!preg_match('/^\d{10}$/', $telefono)) { // Valida que sean 10 dígitos numéricos
+                            echo json_encode(["message" => "Error: Phone number must be 10 digits"]);
+                            error_log("updateUserDetails.php: Error - Invalid phone number format for ID: " . $id_empleado);
+                            return;
+                        }
+                        // **Validación de teléfono existente**
+                        $stmtCheckTelefono = $pdo->prepare("SELECT COUNT(*) FROM empleado WHERE telefono = ? AND ID != ?");
+                        $stmtCheckTelefono->execute([$telefono, $id_empleado]);
+                        if ($stmtCheckTelefono->fetchColumn() > 0) {
+                            echo json_encode(["message" => "Error: This phone number is already in use"]);
+                            error_log("updateUserDetails.php: Error - Phone number already in use: " . $telefono);
+                            return;
+                        }
                         $stmtTelefono = $pdo->prepare("UPDATE empleado SET telefono = ? WHERE ID = ?");
                         if ($stmtTelefono->execute([$telefono, $id_empleado])) {
-                            error_log("updateUserDetails.php: Empleado phone updated for ID: " . $id_empleado . " to: " . $telefono);
+                            error_log("updateUserDetails.php: " . ucfirst($employeeRole) . " phone updated for ID: " . $id_empleado . " to: " . $telefono);
                         } else {
-                            error_log("updateUserDetails.php: Error updating empleado phone for ID: " . $id_empleado . " - " . print_r($stmtTelefono->errorInfo(), true));
+                            error_log("updateUserDetails.php: Error updating " . strtolower($employeeRole) . " phone for ID: " . $id_empleado . " - " . print_r($stmtTelefono->errorInfo(), true));
                             echo json_encode(["message" => "Error updating phone number"]);
                             return;
                         }
@@ -294,7 +316,6 @@ function updateUserDetailsByRole() {
                             return;
                         }
 
-
                         $stmtCheckRFID = $pdo->prepare("SELECT id_RFID FROM rfid WHERE codigo_rfid = ?");
                         $stmtCheckRFID->execute([$rfid]);
                         $rfidRecord = $stmtCheckRFID->fetch(PDO::FETCH_ASSOC);
@@ -303,27 +324,14 @@ function updateUserDetailsByRole() {
                             $rfid_id = $rfidRecord['id_RFID'];
                             $stmtUpdateRFID = $pdo->prepare("UPDATE rfid SET id_empleado = ? WHERE id_RFID = ?");
                             if ($stmtUpdateRFID->execute([$id_empleado, $rfid_id])) {
-                                error_log("updateUserDetails.php: Empleado RFID re-assigned to ID: " . $id_empleado . ", RFID Code: " . $rfid);
+                                error_log("updateUserDetails.php: " . ucfirst($employeeRole) . " RFID re-assigned to ID: " . $id_empleado . ", RFID Code: " . $rfid);
                             } else {
-                                error_log("updateUserDetails.php: Error re-assigning empleado RFID for ID: " . $id_empleado . ", RFID Code: " . $rfid . " - " . print_r($stmtUpdateRFID->errorInfo(), true));
+                                error_log("updateUserDetails.php: Error re-assigning " . strtolower($employeeRole) . " RFID for ID: " . $id_empleado . ", RFID Code: " . $rfid . " - " . print_r($stmtUpdateRFID->errorInfo(), true));
                                 echo json_encode(["message" => "Error re-assigning RFID"]);
                                 return;
                             }
                         } else {
                             echo json_encode(["message" => "Error: RFID code not found"]);
-                            return;
-                        }
-                    }
-                    break;
-                case 'guardia':
-                    if (isset($data['telefono'])) {
-                        $telefono = trim($data['telefono']);
-                        $stmtTelefono = $pdo->prepare("UPDATE empleado SET telefono = ? WHERE ID = ?");
-                        if ($stmtTelefono->execute([$telefono, $id_empleado])) {
-                            error_log("updateUserDetails.php: Guardia phone updated for ID: " . $id_empleado . " to: " . $telefono);
-                        } else {
-                            error_log("updateUserDetails.php: Error updating guardia phone for ID: " . $id_empleado . " - " . print_r($stmtTelefono->errorInfo(), true));
-                            echo json_encode(["message" => "Error updating phone number"]);
                             return;
                         }
                     }
@@ -344,3 +352,4 @@ function updateUserDetailsByRole() {
         echo json_encode(["message" => "Error: Database error during update"]);
     }
 };
+?>

@@ -26,6 +26,9 @@ const UserDetails = ({ route, navigation }) => {
     const [selectedRole, setSelectedRole] = useState(userDetails?.rol || 'empleado');
     const [notification, setNotification] = useState("");
     const [notificationType, setNotificationType] = useState("");
+    const [telefonoError, setTelefonoError] = useState("");
+    const [contrasenaError, setContrasenaError] = useState("");
+    const [telefonoLength, setTelefonoLength] = useState(0);
 
     // Usamos useRef para referenciar el contenedor del formulario
     const formContainerRef = useRef(null);
@@ -117,14 +120,48 @@ const UserDetails = ({ route, navigation }) => {
         fetchInactiveRfids();
     }, [isEditing, selectedRole, userDetails?.rfid]);
 
-    const handleInputChange = (name, value) => setUpdatedDetails(prev => ({ ...prev, [name]: value }));
+    const handleInputChange = (name, value) => {
+        setUpdatedDetails(prev => ({ ...prev, [name]: value }));
+        if (name === 'telefono') {
+            if (/[^0-9]/.test(value)) {
+                // No permitir caracteres no numéricos en tiempo real
+                const numericValue = value.replace(/[^0-9]/g, '');
+                setUpdatedDetails(prev => ({ ...prev, [name]: numericValue }));
+                setTelefonoLength(numericValue.length);
+            } else {
+                setTelefonoLength(value.length);
+            }
+            // La validación de 10 dígitos se hará al enviar el formulario
+        } else if (name === 'newPassword') {
+            // La validación de mínimo 8 caracteres se hará al enviar el formulario
+        }
+    };
     const handleStartEdit = () => { setIsEditing(true); setUpdatedDetails({ ...userDetails }); setPreviousRfid(userDetails.rfid); };
-    const handleCancelEdit = () => { setIsEditing(false); setUpdatedDetails(userDetails); setUpdateError(null); setShowRfidModal(false); }; // Hide modal on cancel
+    const handleCancelEdit = () => { setIsEditing(false); setUpdatedDetails(userDetails); setUpdateError(null); setShowRfidModal(false); setTelefonoError(""); setContrasenaError(""); }; // Hide modal on cancel and clear errors
     const handleRoleSelect = (role) => { setSelectedRole(role); setUpdatedDetails(prev => ({ ...prev, rol: role })); };
 
     const handleUpdateDetails = async () => {
         setUpdateLoading(true);
         setUpdateError(null);
+        setTelefonoError("");
+        setContrasenaError("");
+        let hasError = false;
+
+        if ((selectedRole === 'empleado' || selectedRole === 'guardia') && (updatedDetails.telefono && updatedDetails.telefono.length !== 10)) {
+            setTelefonoError("Phone number must be 10 digits.");
+            hasError = true;
+        }
+
+        if (selectedRole === 'supervisor' && updatedDetails.newPassword && updatedDetails.newPassword.length < 8) {
+            setContrasenaError("Password must be at least 8 characters long.");
+            hasError = true;
+        }
+
+        if (hasError) {
+            setUpdateLoading(false);
+            return;
+        }
+
         const updatesToSend = {};
         let rfidUpdateSuccessful = true;
 
@@ -150,12 +187,12 @@ const UserDetails = ({ route, navigation }) => {
                 console.log("Respuesta de actualización de RFID:", data);
                 if (data?.message !== 'RFID updated successfully' && data?.message !== 'RFID successfully unassigned.') {
                     setUpdateError(data?.message || 'Failed to update RFID.');
+                    setNotification(data?.message || 'Failed to update RFID.');
+                    setNotificationType('error');
                     return false;
                 } else {
                     setUserDetails(prev => ({ ...prev, rfid: payload.codigo_rfid === null ? null : payload.codigo_rfid }));
                     setUpdatedDetails(prev => ({ ...prev, rfid: payload.codigo_rfid === null ? null : payload.codigo_rfid }));
-                    setNotification(data.message);
-                    setNotificationType('success');
                     return true;
                 }
             } catch (err) {
@@ -196,13 +233,17 @@ const UserDetails = ({ route, navigation }) => {
             return obj;
         }, {});
 
-        if (Object.keys(otherUpdatesToSend).length > 0 && rfidUpdateSuccessful) {
+        if ((Object.keys(otherUpdatesToSend).length > 0 || (updatedDetails.newPassword?.length > 0 && selectedRole === 'supervisor')) && rfidUpdateSuccessful) {
             const apiUrl = `${getApiUrl('updateUserDetails')}?action=updateUserDetailsByRole`;
             try {
+                const payload = { id_empleado: employeeId, rol: selectedRole, ...otherUpdatesToSend };
+                if (updatedDetails.newPassword) {
+                    payload.newPassword = updatedDetails.newPassword;
+                }
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_empleado: employeeId, rol: selectedRole, ...otherUpdatesToSend }),
+                    body: JSON.stringify(payload),
                 });
                 if (!response.ok) throw new Error(`Error updating details: ${response.status}`);
                 const data = await response.json();
@@ -236,7 +277,7 @@ const UserDetails = ({ route, navigation }) => {
                             setLoading(false);
                         }
                     };
-                    if (Object.keys(otherUpdatesToSend).length > 0) fetchUserDetails();
+                    if (Object.keys(otherUpdatesToSend).length > 0 || (updatedDetails.newPassword?.length > 0 && selectedRole === 'supervisor')) fetchUserDetails();
                     else setIsEditing(false);
                 } else {
                     setUpdateError(data?.message || 'Failed to update user details.');
@@ -250,14 +291,14 @@ const UserDetails = ({ route, navigation }) => {
             } finally {
                 setUpdateLoading(false);
             }
-        } else if (!updateError && (updatedDetails.rfid === userDetails?.rfid) && Object.keys(otherUpdatesToSend).length === 0) {
+        } else if (!updateError && (updatedDetails.rfid === userDetails?.rfid) && Object.keys(otherUpdatesToSend).length === 0 && !(updatedDetails.newPassword?.length > 0 && selectedRole === 'supervisor')) {
             Alert.alert('Info', 'No changes to update.');
             setIsEditing(false);
             setUpdateLoading(false);
-        } else if (!updateError && (updatedDetails.rfid !== userDetails?.rfid) && Object.keys(otherUpdatesToSend).length === 0 && rfidUpdateSuccessful) {
+        } else if (!updateError && (updatedDetails.rfid !== userDetails?.rfid) && Object.keys(otherUpdatesToSend).length === 0 && !(updatedDetails.newPassword?.length > 0 && selectedRole === 'supervisor') && rfidUpdateSuccessful) {
             setIsEditing(false);
             setUpdateLoading(false);
-        } else if (!updateError && updatedDetails.rfid === '0' && userDetails?.rfid && rfidUpdateSuccessful) {
+        } else if (!updateError && updatedDetails.rfid === '0' && userDetails?.rfid && rfidUpdateSuccessful && Object.keys(otherUpdatesToSend).length === 0 && !(updatedDetails.newPassword?.length > 0 && selectedRole === 'supervisor')) {
             setIsEditing(false);
             setUpdateLoading(false);
         } else {
@@ -295,274 +336,113 @@ const UserDetails = ({ route, navigation }) => {
             </View>
 
             <View style={styles.formOuterBorder}>
-                <View style={[styles.formContainer, { padding: 12 }]}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>ROLE</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={translateRole(selectedRole)}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>NAME</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={updatedDetails.nombre || ''}
-                            onChangeText={(text) => handleInputChange('nombre', text)}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>LAST NAME</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={updatedDetails.apellido_paterno || ''}
-                            onChangeText={(text) => handleInputChange('apellido_paterno', text)}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>GENDER</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={updatedDetails.genero || ''}
-                            onChangeText={(text) => handleInputChange('genero', text)}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    {selectedRole === 'supervisor' && (
-                        <>
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>EMAIL</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={updatedDetails.correo || ''}
-                                    onChangeText={(text) => handleInputChange('correo', text)}
-                                    keyboardType="email-address"
-                                />
-                            </View>
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>PASSWORD (Min. 8 characters)</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    secureTextEntry
-                                    onChangeText={(text) => handleInputChange('newPassword', text)}
-                                />
-                            </View>
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>RFID</Text>
-                                <TouchableOpacity style={styles.dropdownButton} onPress={() => setShowRfidModal(true)}>
-                                    <Text style={styles.dropdownButtonText}>{updatedDetails.rfid === '0' ? 'Remove' : updatedDetails.rfid || 'Select RFID'}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    )}
-                    {(selectedRole === 'empleado' || selectedRole === 'guardia') && (
+            <View style={[styles.formContainer, { padding: 12 }]}>
                         <View style={styles.inputGroup}>
-                            <Text style={styles.label}>PHONE</Text>
+                            <Text style={styles.label}>ROLE</Text>
+                            <TextInput
+                                style={[styles.input, styles.readOnlyInput]}
+                                value={translateRole(selectedRole)}
+                                editable={false}
+                                readOnly={true}
+                                selectTextOnFocus={false}
+                            />
+                        </View>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>NAME</Text>
+                            <TextInput
+                                style={[styles.input, styles.readOnlyInput]}
+                                value={updatedDetails.nombre || ''}
+                                onChangeText={(text) => handleInputChange('nombre', text)}
+                                editable={false}
+                                readOnly={true}
+                                selectTextOnFocus={false}
+                            />
+                        </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>LAST NAME</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={updatedDetails.apellido_paterno || ''}
+                        onChangeText={(text) => handleInputChange('apellido_paterno', text)}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>GENDER</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={updatedDetails.genero || ''}
+                        onChangeText={(text) => handleInputChange('genero', text)}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                {selectedRole === 'supervisor' && (
+                    <>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>EMAIL</Text>
                             <TextInput
                                 style={styles.input}
-                                value={updatedDetails.telefono || ''}
-                                onChangeText={(text) => handleInputChange('telefono', text)}
-                                keyboardType="phone-pad"
+                                value={updatedDetails.correo || ''}
+                                onChangeText={(text) => handleInputChange('correo', text)}
+                                keyboardType="email-address"
                             />
                         </View>
-                    )}
-
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#155724', borderColor: '#155724' }]} onPress={handleUpdateDetails} disabled={updateLoading}>
-                            <Text style={styles.buttonText}>{updateLoading ? 'Registering...' : 'Register'}</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-
-            <Modal
-                visible={showRfidModal}
-                transparent={true}
-                animationType="none"
-            >
-                <View style={styles.modalOverlay}>
-                    <View
-                        style={[styles.modalContainer, { width: '60%', maxWidth: 300, maxHeight: '60%' }]}>
-                        <Text style={styles.modalTitle}>Select RFID</Text>
-                        <ScrollView style={styles.modalScrollView}>
-                            {
-                                loadingRfids ? (
-                                    <ActivityIndicator size="large" color="#007bff" />
-                                ) : errorRfids ? (
-                                    <Text style={styles.errorText}>{errorRfids}</Text>
-                                ) : (
-                                    availableRfids.map((rfid) => (
-                                        <TouchableOpacity
-                                            key={rfid.codigo_rfid}
-                                            style={styles.modalItem}
-                                            onPress={() => handleRfidSelect(rfid.codigo_rfid)}
-                                        >
-                                            <Text style={styles.modalItemText}>
-                                                {rfid.codigo_rfid === '0' ? 'Remove RFID' : rfid.codigo_rfid}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))
-                                )
-                            }
-                        </ScrollView>
-                        <TouchableOpacity style={[styles.modalCloseButton, { backgroundColor: '#a3916f' }]} onPress={() => setShowRfidModal(false)}>
-                            <Text style={styles.modalCloseButtonText}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        </ScrollView>
-    );
-
-    return (
-        <ScrollView contentContainerStyle={styles.centeredScrollViewContent}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color="#333" />
-                <Text style={[styles.backText, { color: '#333' }]}>Back</Text>
-            </TouchableOpacity>
-            <View style={styles.headerContainer}>
-                <HeaderTitleBox iconName="user-circle" text="USER DETAILS" />
-            </View>
-            <View style={styles.formOuterBorder}>
-                <View style={[styles.formContainer, { padding: 12 }]}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>ROLE</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={translateRole(selectedRole)}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>NAME</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={userDetails?.nombre || ''}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>LAST NAME</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={userDetails?.apellido_paterno || ''}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>GENDER</Text>
-                        <TextInput
-                            style={[styles.input, styles.readOnlyInput]}
-                            value={userDetails?.genero || ''}
-                            editable={false}
-                            readOnly={true}
-                            selectTextOnFocus={false}
-                        />
-                    </View>
-                    {(selectedRole === 'supervisor' || selectedRole === 'empleado' || selectedRole === 'guardia') && (
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>PASSWORD (Min. 8 characters)</Text>
+                            <TextInput
+                                style={styles.input}
+                                secureTextEntry
+                                onChangeText={(text) => handleInputChange('newPassword', text)}
+                            />
+                            {contrasenaError && <Text style={styles.errorText}>{contrasenaError}</Text>}
+                        </View>
                         <View style={styles.inputGroup}>
                             <Text style={styles.label}>RFID</Text>
-                            {isEditing ? (
-                                <TouchableOpacity style={styles.dropdownButton} onPress={() => setShowRfidModal(true)}>
-                                    <Text style={styles.dropdownButtonText}>{updatedDetails.rfid === '0' ? 'Remove' : updatedDetails.rfid || userDetails.rfid || 'Select RFID'}</Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <View style={[styles.inputText, styles.readOnlyInput]}>
-                                    <Text>{userDetails.rfid || 'N/A'}</Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
-
-                    {selectedRole === 'supervisor' && (
-                        <>
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>EMAIL</Text>
-                                <TextInput
-                                    style={[styles.input, isEditing ? {} : styles.readOnlyInput]}
-                                    value={isEditing ? updatedDetails.correo : userDetails.correo}
-                                    onChangeText={(text) => isEditing && handleInputChange('correo', text)}
-                                    keyboardType="email-address"
-                                    editable={isEditing}
-                                    readOnly={!isEditing}
-                                    selectTextOnFocus={isEditing}
-                                />
-                            </View>
-                            {isEditing && (
-                                <View style={styles.inputGroup}>
-                                    <Text style={styles.label}>PASSWORD</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        secureTextEntry
-                                        onChangeText={(text) => handleInputChange('newPassword', text)}
-                                        editable={isEditing}
-                                        selectTextOnFocus={isEditing}
-                                    />
-                                </View>
-                            )}
-                        </>
-                    )}
-                    {(selectedRole === 'empleado' || selectedRole === 'guardia') && (
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>PHONE</Text>
-                            <TextInput
-                                style={[styles.input, isEditing ? {} : styles.readOnlyInput]}
-                                value={isEditing ? updatedDetails.telefono : userDetails.telefono}
-                                onChangeText={(text) => isEditing && handleInputChange('telefono', text)}
-                                keyboardType="phone-pad"
-                                editable={isEditing}
-                                readOnly={!isEditing}
-                                selectTextOnFocus={isEditing}
-                            />
-                        </View>
-                    )}
-
-                    <View style={styles.buttonContainer}>
-                        {isEditing ? (
-                            <>
-                                <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#155724', borderColor: '#155724', width: '60%' }]} onPress={handleUpdateDetails} disabled={updateLoading}>
-                                    <Text style={styles.buttonText}>{updateLoading ? 'Updating...' : 'UPDATE'}</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.cancelButton, { backgroundColor: '#8b0000', borderColor: '#8b0000', width: '60%' }]} onPress={handleCancelEdit}>
-                                    <Text style={styles.buttonText}>Cancel</Text>
-                                </TouchableOpacity>
-                            </>
-                        ) : (
-                            <TouchableOpacity style={[styles.editButton, { backgroundColor: '#a3916f', width: '60%' }]} onPress={handleStartEdit}>
-                                <Text style={styles.editButtonText}>Edit</Text>
+                            <TouchableOpacity style={styles.dropdownButton} onPress={() => setShowRfidModal(true)}>
+                                <Text style={styles.dropdownButtonText}>{updatedDetails.rfid === '0' ? 'Remove' : updatedDetails.rfid || 'Select RFID'}</Text>
                             </TouchableOpacity>
-                        )}
+                        </View>
+                    </>
+                )}
+                {(selectedRole === 'empleado' || selectedRole === 'guardia') && (
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>PHONE</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={updatedDetails.telefono || ''}
+                            onChangeText={(text) => handleInputChange('telefono', text)}
+                            keyboardType="phone-pad"
+                            maxLength={10}
+                        />
+                        <Text style={styles.inputIndicator}>{telefonoLength}/10</Text>
+                        {telefonoError && <Text style={styles.errorText}>{telefonoError}</Text>}
                     </View>
+                )}
+
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#155724', borderColor: '#155724' }]} onPress={handleUpdateDetails} disabled={updateLoading}>
+                        <Text style={styles.buttonText}>{updateLoading ? 'Registering...' : 'Register'}</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
+        </View>
 
-            <Modal
-                visible={showRfidModal}
-                transparent={true}
-                animationType="none"
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContainer, { width: '60%', maxWidth: 300, maxHeight: '60%' }]}>
-                        <Text style={styles.modalTitle}>Select RFID</Text>
-                        <ScrollView style={styles.modalScrollView}>
-                            {loadingRfids ? (
+        <Modal
+            visible={showRfidModal}
+            transparent={true}
+            animationType="none"
+        >
+            <View style={styles.modalOverlay}>
+                <View
+                    style={[styles.modalContainer, { width: '60%', maxWidth: 300, maxHeight: '60%' }]}>
+                    <Text style={styles.modalTitle}>Select RFID</Text>
+                    <ScrollView style={styles.modalScrollView}>
+                        {
+                            loadingRfids ? (
                                 <ActivityIndicator size="large" color="#007bff" />
                             ) : errorRfids ? (
                                 <Text style={styles.errorText}>{errorRfids}</Text>
@@ -578,25 +458,190 @@ const UserDetails = ({ route, navigation }) => {
                                         </Text>
                                     </TouchableOpacity>
                                 ))
-                            )}
-                        </ScrollView>
-                        <TouchableOpacity style={[styles.modalCloseButton, { backgroundColor: '#a3916f' }]} onPress={() => setShowRfidModal(false)}>
-                            <Text style={styles.modalCloseButtonText}>Cancel</Text>
-                        </TouchableOpacity>
+                            )
+                        }
+                    </ScrollView>
+                    <TouchableOpacity style={[styles.modalCloseButton, { backgroundColor: '#a3916f' }]} onPress={() => setShowRfidModal(false)}>
+                        <Text style={styles.modalCloseButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    </ScrollView>
+);
+
+return (
+    <ScrollView contentContainerStyle={styles.centeredScrollViewContent}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Text style={[styles.backText, { color: '#333' }]}>Back</Text>
+        </TouchableOpacity>
+        <View style={styles.headerContainer}>
+            <HeaderTitleBox iconName="user-circle" text="USER DETAILS" />
+        </View>
+        {notification ? (
+            <View style={[styles.notificationBanner, { backgroundColor: getNotificationBackgroundColor(notificationType) }]}>
+                <Text style={styles.notificationText}>{notification}</Text>
+            </View>
+        ) : null}
+        <View style={styles.formOuterBorder}>
+            <View style={[styles.formContainer, { padding: 12 }]}>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>ROLE</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={translateRole(selectedRole)}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>NAME</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={userDetails?.nombre || ''}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>LAST NAME</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={userDetails?.apellido_paterno || ''}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>GENDER</Text>
+                    <TextInput
+                        style={[styles.input, styles.readOnlyInput]}
+                        value={userDetails?.genero || ''}
+                        editable={false}
+                        readOnly={true}
+                        selectTextOnFocus={false}
+                    />
+                </View>
+                {(selectedRole === 'supervisor' || selectedRole === 'empleado' || selectedRole === 'guardia') && (
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>RFID</Text>
+                        {isEditing ? (
+                            <TouchableOpacity style={styles.dropdownButton} onPress={() => setShowRfidModal(true)}>
+                                <Text style={styles.dropdownButtonText}>{updatedDetails.rfid === '0' ? 'Remove' : updatedDetails.rfid || userDetails.rfid || 'Select RFID'}</Text>
+                            </TouchableOpacity>
+                        ) : (
+                            <View style={[styles.inputText, styles.readOnlyInput]}>
+                                <Text>{userDetails.rfid || 'N/A'}</Text>
+                            </View>
+                        )}
                     </View>
+                )}
+
+                {selectedRole === 'supervisor' && (
+                    <>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>EMAIL</Text>
+                            <TextInput
+                                style={[styles.input, isEditing ? {} : styles.readOnlyInput]}
+                                value={isEditing ? updatedDetails.correo : userDetails.correo}
+                                onChangeText={(text) => isEditing && handleInputChange('correo', text)}
+                                keyboardType="email-address"
+                                editable={isEditing}
+                                readOnly={!isEditing}
+                                selectTextOnFocus={isEditing}
+                            />
+                        </View>
+                        {isEditing && (
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>PASSWORD</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    secureTextEntry
+                                    onChangeText={(text) => handleInputChange('newPassword', text)}
+                                    editable={isEditing}
+                                    selectTextOnFocus={isEditing}
+                                />
+                                {contrasenaError && <Text style={styles.errorText}>{contrasenaError}</Text>}
+                            </View>
+                        )}
+                    </>
+                )}
+                {(selectedRole === 'empleado' || selectedRole === 'guardia') && (
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>PHONE</Text>
+                        <TextInput
+                            style={[styles.input, isEditing ? {} : styles.readOnlyInput]}
+                            value={isEditing ? updatedDetails.telefono : userDetails.telefono}
+                            onChangeText={(text) => isEditing && handleInputChange('telefono', text)}
+                            keyboardType="phone-pad"
+                            editable={isEditing}
+                            readOnly={!isEditing}
+                            selectTextOnFocus={isEditing}
+                            maxLength={10}
+                        />
+                        {isEditing && <Text style={styles.inputIndicator}>{telefonoLength}/10</Text>}
+                        {telefonoError && <Text style={styles.errorText}>{telefonoError}</Text>}
+                    </View>
+                )}
+
+                <View style={styles.buttonContainer}>
+                    {isEditing ? (
+                        <>
+                            <TouchableOpacity style={[styles.updateButton, { backgroundColor: '#155724', borderColor: '#155724', width: '60%' }]} onPress={handleUpdateDetails} disabled={updateLoading}>
+                                <Text style={styles.buttonText}>{updateLoading ? 'Updating...' : 'UPDATE'}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.cancelButton, { backgroundColor: '#8b0000', borderColor: '#8b0000', width: '60%' }]} onPress={handleCancelEdit}>
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </>
+                    ) : (
+                        <TouchableOpacity style={[styles.editButton, { backgroundColor: '#a3916f', width: '60%' }]} onPress={handleStartEdit}>
+                            <Text style={styles.editButtonText}>Edit</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
-            </Modal>
-            {notification ? (
-                <View style={[
-                    styles.notificationContainerWeb,
-                    isMobile ? styles.notificationMobileTop : {},
-                    { backgroundColor: getNotificationBackgroundColor(notificationType) }
-                ]}>
-                    <Text style={[styles.notificationTextWeb, isMobile ? styles.notificationTextMobile : {}]}>{notification}</Text>
+            </View>
+        </View>
+
+        <Modal
+            visible={showRfidModal}
+            transparent={true}
+            animationType="none"
+        >
+            <View style={styles.modalOverlay}>
+                <View style={[styles.modalContainer, { width: '60%', maxWidth: 300, maxHeight: '60%' }]}>
+                    <Text style={styles.modalTitle}>Select RFID</Text>
+                    <ScrollView style={styles.modalScrollView}>
+                        {loadingRfids ? (
+                            <ActivityIndicator size="large" color="#007bff" />
+                        ) : errorRfids ? (
+                            <Text style={styles.errorText}>{errorRfids}</Text>
+                        ) : (
+                            availableRfids.map((rfid) => (
+                                <TouchableOpacity
+                                    key={rfid.codigo_rfid}
+                                    style={styles.modalItem}
+                                    onPress={() => handleRfidSelect(rfid.codigo_rfid)}
+                                >
+                                    <Text style={styles.modalItemText}>
+                                        {rfid.codigo_rfid === '0' ? 'Remove RFID' : rfid.codigo_rfid}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))
+                        )}
+                    </ScrollView>
+                    <TouchableOpacity style={[styles.modalCloseButton, { backgroundColor: '#a3916f' }]} onPress={() => setShowRfidModal(false)}>
+                        <Text style={styles.modalCloseButtonText}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
-            ) : null}
-        </ScrollView>
-    );
+            </View>
+        </Modal>
+    </ScrollView>
+);
 };
 
 const styles = StyleSheet.create({

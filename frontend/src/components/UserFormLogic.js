@@ -8,8 +8,8 @@ const isWeb = Platform.OS === 'web';
 
 const roleOptions = [
     { display: 'SUPERVISOR', value: 'supervisor', code: '702' },
-    { display: 'GUARD', value: 'guard', code: '701' },
-    { display: 'EMPLOYEE', value: 'employee', code: '703' },
+    { display: 'GUARD', value: 'guardia', code: '701' },
+    { display: 'EMPLOYEE', value: 'empleado', code: '703' },
 ];
 
 const genderOptions = [
@@ -125,7 +125,7 @@ const useUserFormLogic = ({ onSubmit }) => {
             genero: formData.genero ? null : 'Please select a gender',
         };
 
-        if (formData.role === 'guard' || formData.role === 'employee') {
+        if (formData.role === 'guardia' || formData.role === 'empleado') {
             if (!formData.telefono.trim()) {
                 newErrors.telefono = 'Phone number is required';
             } else if (!/^\d{10}$/.test(formData.telefono)) {
@@ -133,7 +133,7 @@ const useUserFormLogic = ({ onSubmit }) => {
             }
         }
 
-        const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
+        const showEmailAndPassword = formData.role !== 'guardia' && formData.role !== 'empleado';
         if (showEmailAndPassword) {
             newErrors.email = validateEmail(formData.email);
             newErrors.password = validatePassword(formData.password);
@@ -160,7 +160,7 @@ const useUserFormLogic = ({ onSubmit }) => {
                     rol: formData.role,
                 };
 
-                const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
+                const showEmailAndPassword = formData.role !== 'guardia' && formData.role !== 'empleado';
                 if (showEmailAndPassword && formData.email && formData.password) {
                     const hashedPassword = await Crypto.digestStringAsync(
                         Crypto.CryptoDigestAlgorithm.SHA256,
@@ -213,7 +213,7 @@ const useUserFormLogic = ({ onSubmit }) => {
         setNotification({ message: '', type: '' });
     };
 
-    const showEmailAndPassword = formData.role !== 'guard' && formData.role !== 'employee';
+    const showEmailAndPassword = formData.role !== 'guardia' && formData.role !== 'empleado';
     const showPhoneNumber = formData.role !== 'administrator' && formData.role !== 'supervisor';
 
     return {
