@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, PanResponder, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, PanResponder, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import UserForm from "../../components/UserForm";
@@ -35,17 +35,15 @@ const CreateUsers = () => {
   };
 
   return (
-    <View
-      style={styles.container}
-      {...panResponder.panHandlers}
-    >
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={24} color="black" />
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
-
-      <HeaderTitleBox iconName="user-plus" text="CREATE USER" />
-      <UserForm roles={['SUPERVISOR', 'GUARD', 'EMPLOYEE']} onSubmit={handleRegister} />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer} {...panResponder.panHandlers}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <HeaderTitleBox iconName="user-plus" text="CREATE USER" />
+        <UserForm roles={['SUPERVISOR', 'GUARD', 'EMPLOYEE']} onSubmit={handleRegister} />
+      </ScrollView>
     </View>
   );
 };
@@ -53,28 +51,26 @@ const CreateUsers = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#faf9f9"
-    
+    backgroundColor: "#faf9f9",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 6,
-    position: "absolute",
-    top: 20,
-    left: 20,
+    marginBottom: 10,
     backgroundColor: "#ddd",
     borderRadius: 8,
+    alignSelf: "flex-start",
   },
   backText: {
     marginLeft: 5,
     fontSize: 16,
     color: "black",
-  },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-    flexWrap: "wrap",
   },
 });
 
