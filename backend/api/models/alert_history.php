@@ -22,20 +22,18 @@ function getAlertHistory() {
     
     $stmt = $pdo->query("
         SELECT 
-            ar.nombre AS area, 
-            DATE_FORMAT(la.fecha, '%d/%m/%Y') AS fecha,
-            la.hora,
-            al.descripcion
-        FROM 
-            log_acceso la
-        JOIN 
-            acceso a ON la.id_registro = a.id_registro
-        JOIN 
-            area ar ON a.codigo_area = ar.codigo_area
-        JOIN 
-            alerta al ON la.id_registro = al.id_registro
-        ORDER BY 
-            al.id DESC
+    ar.nombre AS area, 
+    DATE_FORMAT(a.fecha, '%d/%m/%Y') AS fecha,
+    a.hora_acceso AS hora,
+    al.descripcion
+FROM 
+    acceso a
+JOIN 
+    alerta al ON a.ID = al.id_acceso
+JOIN 
+    area ar ON a.codigo_area = ar.codigo_area
+ORDER BY 
+    al.id DESC;
     ");
     
     $alert_history = $stmt->fetchAll(PDO::FETCH_ASSOC);

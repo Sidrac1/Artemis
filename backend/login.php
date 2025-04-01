@@ -32,10 +32,10 @@ if ($method === 'POST' || $method === 'PUT') {
             case 'updateEmail':
                 updateEmail();
                 break;
-            case 'updatePassword': 
+            case 'updatePassword':
                 updatePassword();
                 break;
-            case 'getEmployeeDetailsByRole': 
+            case 'getEmployeeDetailsByRole':
                 getEmployeeDetailsByRole();
                 break;
             default:
@@ -49,7 +49,6 @@ if ($method === 'POST' || $method === 'PUT') {
     error_log("login.php: Method is not POST");
     echo json_encode(["message" => "Método no permitido"]);
 }
-
 
 function login() {
     global $pdo;
@@ -86,12 +85,10 @@ function login() {
             $storedPassword = $user['contrasena'];
             error_log("login.php: Contraseña almacenada para " . $correo . ": " . $storedPassword);
 
-            // Verificar si la contraseña almacenada parece ser un hash SHA256 (longitud típica)
+            // Check if the stored password is a SHA256 hash
             if (strlen($storedPassword) === 64) {
                 error_log("login.php: Intentando verificación SHA256");
-                // Hashear la contraseña ingresada con SHA256
                 $hashedInputPassword = hash('sha256', $contrasena);
-                // Comparar el hash de la entrada con el hash almacenado
                 if ($hashedInputPassword === $storedPassword) {
                     error_log("login.php: Login successful (SHA256 hashed password)");
                     echo json_encode([
@@ -103,21 +100,37 @@ function login() {
                 } else {
                     error_log("login.php: Invalid credentials (SHA256 hash mismatch)");
                     echo json_encode(["message" => "Credenciales incorrectas"]);
+                    return;
                 }
             } else {
-                error_log("login.php: Contraseña almacenada no parece ser un hash SHA256");
-                echo json_encode(["message" => "Credenciales incorrectas"]);
+                // If not a hash, compare directly (INSECURE)
+                error_log("login.php: Contraseña almacenada no es un hash SHA256, comparando directamente (INSEGURO)");
+                if ($contrasena === $storedPassword) {
+                    error_log("login.php: Login successful (plain text password)");
+                    echo json_encode([
+                        "message" => "Inicio de sesión exitoso",
+                        "id_empleado" => $user['id_empleado'],
+                        "rol" => $user['rol']
+                    ]);
+                    return;
+                } else {
+                    error_log("login.php: Invalid credentials (plain text mismatch)");
+                    echo json_encode(["message" => "Credenciales incorrectas"]);
+                    return;
+                }
             }
         } else {
             error_log("login.php: User not found");
             echo json_encode(["message" => "Credenciales incorrectas"]);
+            return;
         }
     } catch (PDOException $e) {
         error_log("login.php: PDO exception: " . $e->getMessage());
         echo json_encode(["message" => "Error: Database error"]);
     }
-
 }
+
+// ... (rest of the functions: checkEmail, getEmail, updateEmail, updatePassword, getEmployeeDetailsByRole remain the same) ...
 
 function checkEmail() {
     global $pdo;
@@ -220,7 +233,6 @@ function updateEmail() {
         return;
     }
 
-    // Validar el formato del correo electrónico
     if (!filter_var($nuevo_correo, FILTER_VALIDATE_EMAIL)) {
         error_log("login.php: Invalid email format in updateEmail: " . $nuevo_correo);
         echo json_encode(["message" => "Error: Invalid email format"]);
@@ -228,7 +240,6 @@ function updateEmail() {
     }
 
     try {
-        // Verificar si el nuevo correo ya existe para otro usuario
         $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM login WHERE correo = ? AND id_empleado != ?");
         $stmtCheck->execute([$nuevo_correo, $id_empleado]);
         $count = $stmtCheck->fetchColumn();
@@ -334,7 +345,6 @@ function getEmployeeDetailsByRole() {
     $data = json_decode($requestBody);
     error_log("login.php: Decoded JSON Data: " . print_r($data, true));
 
-    // Verificar si $data es un objeto y si tiene la propiedad id_empleado
     if (!is_object($data) || !property_exists($data, 'id_empleado') || empty($data->id_empleado)) {
         error_log("login.php: Employee ID missing or invalid in getEmployeeDetailsByRole");
         echo json_encode(["message" => "Error: Employee ID is required"]);
@@ -363,15 +373,13 @@ function getEmployeeDetailsByRole() {
                 'apellido_materno' => $employeeData['apellido_materno'],
                 'Gender' => $employeeData['genero'],
                 'Role' => $rol,
-                'RFID' => $employeeData['codigo_rfid'] ?? null // Use null coalescing operator
+                'RFID' => $employeeData['codigo_rfid'] ?? null
             ];
 
             if ($rol === 'supervisor') {
                 $response['correo'] = $employeeData['correo'];
-                // No se incluye 'telefono' para supervisor
             } elseif ($rol === 'empleado' || $rol === 'guardia') {
-                $response['Phone'] = $employeeData['telefono'] ?? null; // Use null coalescing operator
-                // No se incluye 'correo' ni 'contrasena' para empleado o guardia
+                $response['Phone'] = $employeeData['telefono'] ?? null;
             }
 
             error_log("login.php: Employee details for ID " . $id_empleado . " (Role: " . $rol . ") with RFID: " . ($employeeData['codigo_rfid'] ?? 'N/A') . ": " . json_encode($response));

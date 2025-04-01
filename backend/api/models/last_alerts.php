@@ -25,18 +25,17 @@ function getLastAlerts() {
         SELECT 
     ar.nombre AS area, 
     DATE_FORMAT(a.fecha, '%d/%m/%Y') AS fecha,
-    a.hora,
+    a.hora_acceso AS hora,
     al.descripcion
 FROM 
     acceso a
 JOIN 
-    area ar ON a.codigo_area = ar.codigo_area
+    alerta al ON a.ID = al.id_acceso
 JOIN 
-    alerta al ON a.ID = al.id_registro
+    area ar ON a.codigo_area = ar.codigo_area
 ORDER BY 
     al.id DESC
-LIMIT 10;
-    ");
+LIMIT 10;");
     
     $last_alerts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($last_alerts);

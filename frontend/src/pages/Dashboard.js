@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [empleados, setEmpleados] = useState(0);
   const [accesses, setAccesses] = useState([]);
   const [alerts, setAlerts] = useState([]);
-  const navigation = useNavigation(); // Para navegar a otras pantallas
+  const navigation = useNavigation();
   const [swipeDirection, setSwipeDirection] = useState("");
 
   useEffect(() => {
