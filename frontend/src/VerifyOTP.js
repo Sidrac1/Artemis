@@ -1,17 +1,23 @@
 // VerifyOTP.js
-import { useState } from "react";
-import { View, TextInput, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, TextInput, Text, StyleSheet, Dimensions, TouchableOpacity, Platform } from "react-native";
 import { API_IP } from "./api/Config";
 import { useNavigation } from "@react-navigation/native";
 import CustomNotification from "./components/CustomNotification"; // Importa el componente de notificación personalizado
+import { Ionicons } from '@expo/vector-icons'; // Importa iconos
 
-const { width } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 const VerifyOTP = ({ route }) => {
     const { email } = route.params;
     const [otp, setOtp] = useState("");
     const navigation = useNavigation();
     const [notification, setNotification] = useState(null);
+
+    useEffect(() => {
+        navigation.setOptions({ headerShown: false }); // Oculta el header de navegación
+    }, [navigation]);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -40,7 +46,8 @@ const VerifyOTP = ({ route }) => {
                 const result = JSON.parse(text);
 
                 if (result.status === "success") {
-                    showNotification(result.message, 'success');
+                    // **Elimina esta línea:**
+                    // showNotification(result.message, 'success');
                     navigation.navigate("ResetPassword", { email });
                 } else {
                     showNotification("The verification code is incorrect.", 'error');
@@ -55,107 +62,155 @@ const VerifyOTP = ({ route }) => {
         }
     };
 
+    const goBack = () => {
+        navigation.goBack();
+    };
+
     return (
-        <View style={styles.container}>
-            <CustomNotification
-                message={notification?.message}
-                type={notification?.type}
-                onClose={() => setNotification(null)}
-            />
-            <Text style={styles.title}>Code Verification</Text>
-            <Text style={styles.infoText}>A verification code has been sent to:</Text>
-            <Text style={styles.emailText}>{email}</Text>
-            <Text style={styles.label}>Enter the code:</Text>
-            <TextInput
-                style={styles.input}
-                value={otp}
-                onChangeText={setOtp}
-                keyboardType="numeric"
-                placeholder="OTP Code"
-                maxLength={6} // Ajusta la longitud según tu necesidad
-            />
-            <TouchableOpacity style={styles.button} onPress={verifyOTP}>
-                <Text style={styles.buttonText}>Verify Code</Text>
-            </TouchableOpacity>
+        <View style={styles.outerContainer}>
+            <View style={[styles.container, isWeb && styles.containerWeb]}>
+                <TouchableOpacity onPress={goBack} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#555" />
+                    <Text style={styles.backButtonText}>Back</Text>
+                </TouchableOpacity>
+                <CustomNotification
+                    message={notification?.message}
+                    type={notification?.type}
+                    onClose={() => setNotification(null)}
+                />
+                <View style={styles.content}>
+                    <Text style={styles.title}>Code Verification</Text>
+                    <Text style={styles.infoText}>A verification code has been sent to:</Text>
+                    <Text style={styles.emailText}>{email}</Text>
+                    <Text style={styles.label}>Enter the code:</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={otp}
+                        onChangeText={setOtp}
+                        keyboardType="numeric"
+                        placeholder="OTP Code"
+                        maxLength={6} // Ajusta la longitud según tu necesidad
+                    />
+                    <TouchableOpacity style={styles.verifyButton} onPress={verifyOTP}>
+                        <Text style={styles.verifyButtonText}>Verify Code</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 };
 
+const baseMarginWeb = 0.2;
+const webWidthPercentage = 1 - (baseMarginWeb * 2);
+
 const styles = StyleSheet.create({
-    container: {
-        width: width * 0.85,
-        padding: 20,
-        backgroundColor: '#F5F1E6', // Similar background
-        borderRadius: 8, // Slightly softer corners
-        alignItems: 'center',
+    outerContainer: {
+        flex: 1,
         justifyContent: 'center',
-        elevation: 3, // Less intense shadow
-        borderWidth: 1, // Subtle border
-        borderColor: '#ddd',
+        alignItems: 'center',
+        backgroundColor: '#ffffff', // Fondo blanco
+    },
+    container: {
+        width: screenWidth * 0.85,
+        padding: 20,
+        backgroundColor: '#F5F1E6', // Fondo del otro formulario
+        borderRadius: 10, // Borde redondeado igual al otro formulario
+        alignItems: 'center',
+        position: 'relative',
+        borderWidth: 1.5, // Borde igual al input del otro formulario
+        borderColor: 'black', // Color del borde igual al input del otro formulario
+        elevation: 5, // Sombra similar
+    },
+    containerWeb: {
+        maxWidth: 400, // Ancho máximo similar
+        paddingVertical: 30,
+    },
+    backButton: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        zIndex: 1,
+        backgroundColor: '#ddd', // Gris claro para el fondo del botón
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 5,
+    },
+    backButtonText: {
+        marginLeft: 5,
+        color: '#000', // Color del texto similar al otro formulario
+        fontSize: 16,
+    },
+    content: {
+        alignItems: 'center',
+        width: '100%',
     },
     title: {
-        fontSize: 24, // Slightly larger title
+        fontSize: 22, // Tamaño de título similar
         fontWeight: 'bold',
-        marginBottom: 15,
-        color: '#4a4a4a', // Darker gray title
+        marginBottom: 20,
+        color: '#333', // Color del título similar
         fontFamily: 'Roboto-Bold',
+        textAlign: 'center',
+        marginTop: 40,
     },
     infoText: {
         fontSize: 16,
-        marginBottom: 8,
-        color: '#666', // Medium gray info text
+        marginBottom: 10,
+        color: '#555', // Color del texto similar
         fontFamily: 'Roboto-Regular',
         textAlign: 'center',
     },
     emailText: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 20,
-        color: '#0056b3', // Darker blue for email
+        marginBottom: 25,
+        color: '#000', // Color similar
         fontFamily: 'Roboto-Medium',
         textAlign: 'center',
     },
     label: {
         fontSize: 16,
         marginBottom: 8,
-        color: '#555',
+        color: '#555', // Color del label similar
         alignSelf: 'flex-start',
         fontFamily: 'Roboto-Regular',
     },
     input: {
         width: '100%',
-        height: 45,
-        borderColor: '#ccc', // Light gray border
-        borderWidth: 1,
-        borderRadius: 6,
-        paddingHorizontal: 12,
-        marginBottom: 18,
+        height: 45, // Altura del input similar
+        borderColor: 'black', // Color del borde igual al otro formulario
+        borderWidth: 1.5, // Ancho del borde igual al otro formulario
+        borderRadius: 8, // Borde redondeado igual al otro formulario
+        paddingHorizontal: 15,
+        marginBottom: 20,
         fontSize: 16,
         backgroundColor: 'white',
         fontFamily: 'Roboto-Regular',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    button: {
-        backgroundColor: 'white',
-        paddingVertical: 10,
-        paddingHorizontal: 25,
-        borderRadius: 20,
-        alignSelf: 'center',
-        borderWidth: 1.5,
-        borderColor: '#007bff', // Primary blue color
-        marginTop: 15,
-        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3,
-        elevation: 2,
+        elevation: 2, // Sombra similar al input
     },
-    buttonText: {
-        color: '#007bff', // Primary blue text
+    verifyButton: {
+        backgroundColor: 'white', // Color del botón similar
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25, // Borde redondeado similar
+        alignSelf: 'center',
+        marginTop: 20,
+        borderWidth: 2, // Borde similar
+        borderColor: 'black', // Color del borde similar
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5, // Sombra similar
+    },
+    verifyButtonText: {
+        color: 'black', // Color del texto del botón similar
         fontSize: 18,
         fontWeight: 'bold',
         fontFamily: 'Roboto-Medium',

@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, Image, Platform, ActivityIndicator } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { API_IP } from './api/Config';
-import { AuthContext } from './AuthContext'; // Importa el AuthContext
-import RequestOTP from './RequestOTP'; // Importa la pantalla de RequestOTP
+import { AuthContext } from './AuthContext';
+import RequestOTP from './RequestOTP';
+import CustomNotification from './components/CustomNotification'; // Asegúrate de tener este componente
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,9 +13,29 @@ const LoginScreen = () => {
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
-    const { login, isLoading, setIsLoading } = useContext(AuthContext); // Obtén login, isLoading y setIsLoading del Context
+    const { login, isLoading, setIsLoading } = useContext(AuthContext);
     const [loginError, setLoginError] = useState('');
-    const [showRecoverPassword, setShowRecoverPassword] = useState(false); // Nuevo estado para controlar la visibilidad
+    const [showRecoverPassword, setShowRecoverPassword] = useState(false);
+    const route = useRoute();
+    const [notification, setNotification] = useState(null);
+
+    useEffect(() => {
+        navigation.setOptions({ headerShown: false });
+
+        // Verifica si hay un mensaje de éxito al montar el componente
+        if (route.params?.passwordResetSuccess) {
+            showNotification(route.params.passwordResetSuccess, 'success');
+            // Limpia el parámetro para que no se muestre de nuevo
+            navigation.setParams({ passwordResetSuccess: undefined });
+        }
+    }, [navigation, route.params?.passwordResetSuccess]);
+
+    const showNotification = (message, type) => {
+        setNotification({ message, type });
+        setTimeout(() => {
+            setNotification(null);
+        }, 3000); // Ocultar después de 3 segundos
+    };
 
     const handleLogin = async () => {
         if (isLoading) {
@@ -38,7 +59,6 @@ const LoginScreen = () => {
             console.log(response.data);
 
             if (response.data.message === 'Inicio de sesión exitoso') {
-                // Llama a la función login del Context para guardar la información del usuario
                 login({ id_empleado: response.data.id_empleado, rol: response.data.rol });
                 navigation.navigate('Dashboard');
             } else {
@@ -65,6 +85,11 @@ const LoginScreen = () => {
 
     return (
         <View style={styles.container}>
+            <CustomNotification
+                message={notification?.message}
+                type={notification?.type}
+                onClose={() => setNotification(null)}
+            />
             {showRecoverPassword ? (
                 <View style={styles.outerContainer}>
                     <RequestOTP navigation={navigation} />
@@ -166,7 +191,7 @@ const mobileStyles = StyleSheet.create({
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowRadiusshadowRadius: 3.84,
         elevation: 5,
     },
     loginButtonText: {

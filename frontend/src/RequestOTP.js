@@ -1,15 +1,18 @@
-import React, { useState } from "react";
-import { View, TextInput, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+// RequestOTP.js
+import React, { useState, useEffect } from "react";
+import { View, TextInput, Text, StyleSheet, Dimensions, TouchableOpacity, Platform, ActivityIndicator } from "react-native";
 import { API_IP } from "./api/Config";
 import { useNavigation } from "@react-navigation/native";
 import CustomNotification from "./components/CustomNotification"; // Importa el componente de notificación personalizado
 
-const { width } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 const RequestOTP = () => {
     const [email, setEmail] = useState("");
     const navigation = useNavigation();
     const [notification, setNotification] = useState(null);
+    const [isLoading, setIsLoading] = useState(false); // Nuevo estado para controlar la carga
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -24,6 +27,7 @@ const RequestOTP = () => {
             return;
         }
 
+        setIsLoading(true); // Inicia la animación de carga
         try {
             const response = await fetch(`http://${API_IP}/Artemis/backend/send_otp.php`, {
                 method: "POST",
@@ -38,7 +42,8 @@ const RequestOTP = () => {
                 const result = JSON.parse(text);
 
                 if (result.status === "success") {
-                    showNotification(result.message, 'success');
+                    // **Elimina esta línea:**
+                    // showNotification(result.message, 'success');
                     navigation.navigate("VerifyOTP", { email });
                 } else if (result.message === "Email address not found in the system.") {
                     showNotification("Email address not found in the system.", 'error');
@@ -52,11 +57,13 @@ const RequestOTP = () => {
         } catch (error) {
             console.error("Error making the request:", error);
             showNotification("There was a problem sending the OTP. Please try again.", 'error');
+        } finally {
+            setIsLoading(false); // Detiene la animación de carga
         }
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, isWeb && styles.containerWeb]}>
             <CustomNotification
                 message={notification?.message}
                 type={notification?.type}
@@ -71,22 +78,35 @@ const RequestOTP = () => {
                 keyboardType="email-address"
                 placeholder="Email address"
             />
-            <TouchableOpacity style={styles.button} onPress={requestOTP}>
-                <Text style={styles.buttonText}>Send Code</Text>
+            <TouchableOpacity style={styles.button} onPress={requestOTP} disabled={isLoading}>
+                {isLoading ? (
+                    <ActivityIndicator color="black" />
+                ) : (
+                    <Text style={styles.buttonText}>Send Code</Text>
+                )}
             </TouchableOpacity>
         </View>
     );
 };
 
+const baseMarginWeb = 0.2; // Puedes ajustar este valor para el margen lateral en web
+const webWidthPercentage = 1 - (baseMarginWeb * 2);
+
 const styles = StyleSheet.create({
     container: {
-        width: width * 0.85,
+        width: screenWidth * 0.85,
         padding: 20,
         backgroundColor: '#F5F1E6',
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 5,
+    },
+    containerWeb: {
+        width: screenWidth * webWidthPercentage,
+        maxWidth: 400, // O el ancho máximo que desees en píxeles
+        marginLeft: 'auto',
+        marginRight: 'auto',
     },
     title: {
         fontSize: 22,
@@ -133,12 +153,16 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+        flexDirection: 'row', // Para alinear el texto y el indicador
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     buttonText: {
         color: 'black',
         fontSize: 18,
         fontWeight: 'bold',
         fontFamily: 'Roboto-Medium',
+        marginLeft: 5, // Espacio entre el indicador y el texto
     },
 });
 

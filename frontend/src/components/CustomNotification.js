@@ -11,7 +11,7 @@ const CustomNotification = ({ message, type, duration = 2000, onClose }) => {
         if (message) {
             // Mostrar la notificación
             Animated.timing(slideAnim, {
-                toValue: isWeb ? -10 : -20,
+                toValue: isWeb ? 100 : -20, // Ajustar valor para web (más abajo)
                 duration: 150,
                 useNativeDriver: false,
             }).start(() => {
@@ -92,15 +92,23 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     containerWeb: {
-        left: screenWidth * baseMarginWeb,
-        right: screenWidth * baseMarginWeb,
-        width: screenWidth * webWidthPercentage,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        borderRadius: 12,
+        position: 'fixed',
+        top: '3%', // Ajustar un poco más abajo
+        left: '37%',
+        transform: 'translateX(-10%)',
+        width: screenWidth * Math.min(webWidthPercentage, 0.5), // Reducir el ancho máximo
+        maxWidth: 400, // Reducir el ancho máximo
+        paddingVertical: 10, // Reducir el padding vertical
+        paddingHorizontal: 15, // Reducir el padding horizontal
+        borderRadius: 8, // Reducir el radio del borde
+        justifyContent: 'center',
+        alignItems: 'center',
+        boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)', // Reducir la sombra
     },
     textWeb: {
-        fontSize: 12,
+        fontSize: 14, // Reducir el tamaño de la fuente
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });
 
