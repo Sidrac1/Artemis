@@ -181,14 +181,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#faf9f9",
-        paddingVertical: 20,
+        paddingVertical: 50,
     },
     backButton: {
         flexDirection: "row",
         alignItems: "center",
         padding: 8,
         position: "absolute",
-        top: 16,
+        top: 20,
         left: 20,
         backgroundColor: "#ddd",
         borderRadius: 8,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
         fontSize: 12, // Even smaller header title on mobile
     },
     formContainerMobile: {
-        width: screenWidth * 0.75, // Even smaller form width on mobile
+        width: screenWidth * 0.7, // Even smaller form width on mobile
         padding: 15, // Even smaller padding on mobile
     },
     formTitleMobile: {

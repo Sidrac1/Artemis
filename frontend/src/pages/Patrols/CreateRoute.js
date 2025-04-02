@@ -58,10 +58,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+
   },
   guardInfo: {
     fontSize: 18,
-    marginVertical: 20,
   },
   errorText: {
     fontSize: 16,

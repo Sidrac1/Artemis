@@ -101,7 +101,7 @@ const PasswordForm = () => {
     };
 
     const mobileOuterContainerStyle = {
-        marginTop: 45,
+        marginTop: 30,
         shadowColor: '#333',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.2,

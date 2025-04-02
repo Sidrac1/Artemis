@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// CreatePatrols.js
+import React, { useEffect, useState, useCallback } from "react";
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,21 +25,22 @@ const CreatePatrol = () => {
     fetchData();
   }, []);
 
-  const handleGuardSelect = (guard) => {
-    console.clear(); // Limpia la consola cada vez que se selecciona un guardia
-    console.log("Selected Guard:", guard); // Registra el guardia seleccionado
-    setSelectedGuard(guard); // Actualiza el estado del guardia seleccionado
-  };
+  const handleGuardSelect = useCallback((guard) => {
+    console.clear();
+    console.log("Selected Guard:", guard);
+    setSelectedGuard(guard);
+  }, []);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     if (selectedGuard) {
-      // Esperamos que el estado se haya actualizado correctamente
       console.log("Continue with selected guard:", selectedGuard);
-      navigation.navigate("CreateRoute", { selectedGuard }); // Pasamos el guardia como parámetro
+      navigation.navigate("CreateRoute", { selectedGuard });
     } else {
       console.log("No guard selected.");
     }
-  };
+  }, [navigation, selectedGuard]);
+
+  console.log("CreatePatrol rendered"); // Para depuración
 
   return (
     <View style={styles.container}>
@@ -52,7 +54,7 @@ const CreatePatrol = () => {
         <GuardSelectionTable
           data={guardias}
           onGuardSelect={handleGuardSelect}
-          onContinue={handleContinue} // No pasamos navigation directamente, usamos el estado actualizado
+          onContinue={handleContinue}
         />
       </View>
     </View>
@@ -63,13 +65,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#faf9f9",
+    paddingTop: 40,
+    paddingBottom: 55,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
     position: "absolute",
-    top: 20,
+    top: 10,
     left: 20,
     backgroundColor: "#ddd",
     borderRadius: 8,
@@ -81,8 +85,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
+    marginTop: 15,
   },
 });
 

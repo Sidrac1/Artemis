@@ -114,6 +114,8 @@ const ModifyUsers = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingVertical: 50,
+
   },
   backButton: {
     flexDirection: "row",
@@ -125,6 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ddd",
     borderRadius: 8,
     zIndex: 100,
+    
   },
   backText: {
     marginLeft: 5,
@@ -135,6 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    
   },
   errorContainer: {
     flex: 1,

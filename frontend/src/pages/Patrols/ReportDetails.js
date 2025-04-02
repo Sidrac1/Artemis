@@ -4,33 +4,43 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import HeaderTitleBox from '../../components/HeaderTitleBoxID';
 import ActivePatrolCard from '../../components/PatrolDetailsCard';
-import { getRondas } from '../../api/Ronda';  // Importa correctamente la función desde Ronda.js
+import { getRondas } from '../../api/Ronda'; // Asegúrate de la ruta correcta
 
 const PatrolReportDetails = ({ route }) => {
   const navigation = useNavigation();
   const { ID } = route.params;
 
-  const [patrolData, setPatrolData] = useState(null);  // Estado para los detalles de la ronda
-  const [loading, setLoading] = useState(true);  // Estado de carga
+  const [patrolData, setPatrolData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Función para obtener los detalles del reporte
     const fetchPatrolData = async () => {
       try {
         setLoading(true);
-        const data = await getRondas(ID);  // Llamada a la función getRondas usando el ID
-        console.log('Datos de la ronda:', data);
-        setPatrolData(data);  // Aquí actualizamos patrolData
-
+        setError(null); // Limpiar cualquier error previo
+        console.log('Fetching data for ID:', ID);
+        const data = await getRondas(ID);
+        console.log('Data from getRondas:', data);
+        setPatrolData(data);
         setLoading(false);
-      } catch (error) {
-        console.error('Error al obtener los detalles de la ronda:', error);
+      } catch (err) {
+        console.error('Error fetching patrol details:', err);
+        setError('Error al obtener los detalles de la ronda.');
         setLoading(false);
+        setPatrolData(null); // Asegurar que patrolData sea null en caso de error
       }
     };
 
-    fetchPatrolData();
-  }, [ID]);  // Solo se ejecuta cuando el ID cambia
+    if (ID) {
+      fetchPatrolData();
+    } else {
+      console.warn('No ID provided in route params.');
+      setError('No se proporcionó un ID válido.');
+      setLoading(false);
+      setPatrolData(null);
+    }
+  }, [ID]);
 
   if (loading) {
     return (
@@ -41,24 +51,39 @@ const PatrolReportDetails = ({ route }) => {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <HeaderTitleBox iconName="file-alt" text={`Detalles del Reporte ${ID}`} id={ID} />
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
   if (!patrolData) {
     return (
       <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <HeaderTitleBox iconName="file-alt" text={`Detalles del Reporte ${ID}`} id={ID} />
         <Text>No se encontraron detalles para esta ronda.</Text>
       </View>
     );
   }
 
-  // Si los datos se cargaron correctamente, mostrar los detalles
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color="black" />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
-
       <HeaderTitleBox iconName="file-alt" text={`Detalles del Reporte ${ID}`} id={ID} />
-
       <ActivePatrolCard patrolData={patrolData} />
     </View>
   );
@@ -69,6 +94,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+    paddingTop: 55,
   },
   backButton: {
     flexDirection: 'row',
@@ -79,6 +105,7 @@ const styles = StyleSheet.create({
     left: 20,
     backgroundColor: '#ddd',
     borderRadius: 8,
+    zIndex: 1,
   },
   backText: {
     marginLeft: 5,
@@ -90,6 +117,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
+  },
+  errorText: {
+    marginTop: 20,
+    color: 'red',
+    textAlign: 'center',
   },
 });
 
