@@ -35,6 +35,9 @@ if ($method === 'POST' || $method === 'PUT') {
             case 'updatePassword':
                 updatePassword();
                 break;
+            case 'resetPassword': // Nueva acción para restablecer la contraseña
+                resetPassword();
+                break;
             case 'getEmployeeDetailsByRole':
                 getEmployeeDetailsByRole();
                 break;
@@ -127,6 +130,58 @@ function login() {
     } catch (PDOException $e) {
         error_log("login.php: PDO exception: " . $e->getMessage());
         echo json_encode(["message" => "Error: Database error"]);
+    }
+}
+
+function resetPassword() {
+    global $pdo;
+    error_log("login.php: resetPassword() function started");
+
+    $data = json_decode(file_get_contents("php://input"));
+    if ($data === null && json_last_error() !== JSON_ERROR_NONE) {
+        error_log("login.php: JSON decode error in resetPassword: " . json_last_error_msg());
+        echo json_encode(["status" => "error", "message" => "Error: Invalid JSON data"]);
+        return;
+    }
+
+    $email = $data->email;
+    $newPassword = $data->newPassword;
+
+    if (empty($email) || empty($newPassword)) {
+        error_log("login.php: Email or new password missing in resetPassword");
+        echo json_encode(["status" => "error", "message" => "Error: Email and new password are required"]);
+        return;
+    }
+
+    try {
+        // Verificar si el correo existe
+        $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM login WHERE correo = ?");
+        $stmtCheck->execute([$email]);
+        $count = $stmtCheck->fetchColumn();
+
+        if ($count > 0) {
+            // Hashear la nueva contraseña
+            $hashedNewPassword = hash('sha256', $newPassword);
+
+            // Actualizar la contraseña y limpiar los campos de OTP
+            $stmtUpdate = $pdo->prepare("UPDATE login SET contrasena = ?, otp_code = NULL, otp_expires = NULL WHERE correo = ?");
+            $updateResult = $stmtUpdate->execute([$hashedNewPassword, $email]);
+
+            if ($updateResult) {
+                error_log("login.php: Password reset successfully for email: " . $email);
+                echo json_encode(["status" => "success", "message" => "Contraseña restablecida exitosamente"]);
+            } else {
+                error_log("login.php: Could not reset password for email: " . $email);
+                echo json_encode(["status" => "error", "message" => "Error: No se pudo restablecer la contraseña"]);
+            }
+        } else {
+            error_log("login.php: Email not found for password reset: " . $email);
+            echo json_encode(["status" => "error", "message" => "Error: Correo electrónico no encontrado"]);
+        }
+
+    } catch (PDOException $e) {
+        error_log("login.php: PDO exception in resetPassword: " . $e->getMessage());
+        echo json_encode(["status" => "error", "message" => "Error: Error de base de datos al restablecer la contraseña"]);
     }
 }
 

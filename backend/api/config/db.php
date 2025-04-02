@@ -1,6 +1,6 @@
 <?php
 $host = 'localhost';
-$dbname = 'artemisOficial';
+$dbname = 'artemisoficial';
 $username = 'root'; 
 $password = ''; 
 
