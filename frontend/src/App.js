@@ -9,7 +9,7 @@ import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import LoginScreen from "./LoginScreen";
 import { SafeAreaView, View } from "react-native";
-import { AuthProvider } from "./AuthContext"; // Importa el AuthProvider
+import { AuthProvider } from "./AuthContext";
 
 const Stack = createStackNavigator();
 

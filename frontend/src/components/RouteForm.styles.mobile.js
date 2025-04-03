@@ -25,6 +25,8 @@ export const styles = StyleSheet.create({
     borderColor: "black",
     width: '92%', // Aumentar un poco más el ancho
     maxWidth: 340, // Aumentar un poco más el ancho máximo
+        paddingVertical: 20,
+
   },
   card: {
     width: '100%',
@@ -81,8 +83,8 @@ export const styles = StyleSheet.create({
     elevation: 1,
   },
   checkbox: {
-    width: 12, // Reducir el tamaño
-    height: 12, // Reducir el tamaño
+    width: 20, // Reducir el tamaño
+    height: 20, // Reducir el tamaño
     borderWidth: 0.8, // Reducir el borde
     borderColor: '#333',
     borderRadius: 2,
@@ -90,6 +92,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+
   },
   checkboxChecked: {
     backgroundColor: "#e6ddcc",
@@ -99,20 +102,20 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   topLeft: {
-    top: '5%',
-    left: '5%',
+    top: '30%',
+    right:  '150',
   },
   topRight: {
     top: '5%',
     right: '5%',
   },
   bottomLeft: {
-    bottom: '5%',
-    left: '5%',
+    bottom: '0%',
+    left: '%',
   },
   bottomRight: {
-    bottom: '5%',
-    right: '5%',
+    bottom: '%',
+    right: '-40%',
   },
   sectorName: {
     fontSize: 8, // Reducir el tamaño
@@ -129,6 +132,7 @@ export const styles = StyleSheet.create({
     height: 22, // Reducir la altura
     width: "100%",
     fontSize: 9, // Reducir el tamaño de la fuente
+    
   },
   dateContainer: {
     flexDirection: "column",

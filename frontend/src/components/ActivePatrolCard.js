@@ -61,7 +61,7 @@ const ActivePatrolCard = ({ patrolData }) => {
                         <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>SECTORS</Text>
                         <TextInput
                             style={isMobile ? mobileStyles.input : styles.input}
-                            value={formattedSectors}  // Mostrar los sectores formateados
+                            value={formattedSectors}
                             editable={false}
                         />
                     </View>
@@ -71,7 +71,7 @@ const ActivePatrolCard = ({ patrolData }) => {
                         <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>FREQUENCY</Text>
                         <TextInput
                             style={isMobile ? mobileStyles.input : styles.input}
-                            value={patrolData.frequency}
+                            value={String(patrolData.frequency)}
                             editable={false}
                         />
                     </View>
