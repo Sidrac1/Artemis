@@ -1,83 +1,87 @@
-// ActivePatrolCard.js
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Dimensions, Platform, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const isMobile = Platform.OS !== 'web';
 
 const ActivePatrolCard = ({ patrolData }) => {
-    // Transformar el campo 'sectors' a un formato "A -> B -> C"
-    const formattedSectors = patrolData.sectors
-        .split(' ') // Dividir los sectores por espacios
-        .join(' -> '); // Unirlos con " -> "
+    const navigation = useNavigation();
+    const formattedSectors = patrolData.sectors.split(' ').join(' -> ');
+
+    const handleCardPress = () => {
+        navigation.navigate('ReportDetails', { id: patrolData.codigo });
+    };
 
     return (
-        <View style={isMobile ? mobileStyles.container : styles.container}>
-            <View style={isMobile ? mobileStyles.outerContainer : styles.outerContainer}>
-                <View style={isMobile ? mobileStyles.card : styles.card}>
-                    <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
-                        <Ionicons name="map" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
-                        <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>ROUTE NAME</Text>
-                        <TextInput
-                            style={isMobile ? mobileStyles.input : styles.input}
-                            value={patrolData.nombre}
-                            editable={false}
-                        />
-                    </View>
-
-                    <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
-                        <Ionicons name="person" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
-                        <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>GUARD</Text>
-                        <TextInput
-                            style={isMobile ? mobileStyles.input : styles.input}
-                            value={patrolData.guard}
-                            editable={false}
-                        />
-                    </View>
-
-                    <View style={isMobile ? mobileStyles.dateTimeContainer : styles.dateTimeContainer}>
-                        <View style={isMobile ? mobileStyles.dateTimeSubContainer : styles.dateTimeSubContainer}>
-                            <Ionicons name="time" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
-                            <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>START</Text>
+        <TouchableOpacity onPress={handleCardPress}>
+            <View style={isMobile ? mobileStyles.container : styles.container}>
+                <View style={isMobile ? mobileStyles.outerContainer : styles.outerContainer}>
+                    <View style={isMobile ? mobileStyles.card : styles.card}>
+                        <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
+                            <Ionicons name="map" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
+                            <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>ROUTE NAME</Text>
                             <TextInput
-                                style={[isMobile ? mobileStyles.input : styles.input, isMobile ? mobileStyles.dateInput : styles.dateInput]}
-                                value={patrolData.start}
+                                style={isMobile ? mobileStyles.input : styles.input}
+                                value={patrolData.nombre}
                                 editable={false}
                             />
                         </View>
-                        <View style={isMobile ? mobileStyles.dateTimeSubContainer : styles.dateTimeSubContainer}>
-                            <Text style={[isMobile ? mobileStyles.fieldText : styles.fieldText, isMobile ? mobileStyles.endTextMobile : styles.endText]}>END</Text>
+
+                        <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
+                            <Ionicons name="person" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
+                            <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>GUARD</Text>
                             <TextInput
-                                style={[isMobile ? mobileStyles.input : styles.input, isMobile ? mobileStyles.dateInput : styles.dateInput]}
-                                value={patrolData.end}
+                                style={isMobile ? mobileStyles.input : styles.input}
+                                value={patrolData.guard}
                                 editable={false}
                             />
                         </View>
-                    </View>
 
-                    <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
-                        <Ionicons name="flag" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
-                        <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>SECTORS</Text>
-                        <TextInput
-                            style={isMobile ? mobileStyles.input : styles.input}
-                            value={formattedSectors}  // Mostrar los sectores formateados
-                            editable={false}
-                        />
-                    </View>
+                        <View style={isMobile ? mobileStyles.dateTimeContainer : styles.dateTimeContainer}>
+                            <View style={isMobile ? mobileStyles.dateTimeSubContainer : styles.dateTimeSubContainer}>
+                                <Ionicons name="time" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
+                                <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>START</Text>
+                                <TextInput
+                                    style={[isMobile ? mobileStyles.input : styles.input, isMobile ? mobileStyles.dateInput : styles.dateInput]}
+                                    value={patrolData.start}
+                                    editable={false}
+                                />
+                            </View>
+                            <View style={isMobile ? mobileStyles.dateTimeSubContainer : styles.dateTimeSubContainer}>
+                                <Text style={[isMobile ? mobileStyles.fieldText : styles.fieldText, isMobile ? mobileStyles.endTextMobile : styles.endText]}>END</Text>
+                                <TextInput
+                                    style={[isMobile ? mobileStyles.input : styles.input, isMobile ? mobileStyles.dateInput : styles.dateInput]}
+                                    value={patrolData.end}
+                                    editable={false}
+                                />
+                            </View>
+                        </View>
 
-                    <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
-                        <Ionicons name="refresh" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
-                        <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>FREQUENCY</Text>
-                        <TextInput
-                            style={isMobile ? mobileStyles.input : styles.input}
-                            value={patrolData.frequency}
-                            editable={false}
-                        />
+                        <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
+                            <Ionicons name="flag" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
+                            <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>SECTORS</Text>
+                            <TextInput
+                                style={isMobile ? mobileStyles.input : styles.input}
+                                value={formattedSectors}
+                                editable={false}
+                            />
+                        </View>
+
+                        <View style={isMobile ? mobileStyles.fieldContainer : styles.fieldContainer}>
+                            <Ionicons name="refresh" size={24} color="black" style={isMobile ? mobileStyles.fieldIcon : styles.fieldIcon} />
+                            <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>FREQUENCY</Text>
+                            <TextInput
+                                style={isMobile ? mobileStyles.input : styles.input}
+                                value={patrolData.frequency}
+                                editable={false}
+                            />
+                        </View>
                     </View>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
@@ -116,10 +120,10 @@ const styles = StyleSheet.create({
     fieldText: {
         fontSize: 12,
         fontWeight: 'bold',
-        marginRight: 6, // Default marginRight
-        width: 90, // Default width
+        marginRight: 6,
+        width: 90,
     },
-    endText: { // Styles for 'END' text only
+    endText: {
         marginRight: 5,
         width: 30,
     },

@@ -28,6 +28,7 @@ function getRouteSchedule() {
             rd.hora_inicio AS start,
             rd.hora_fin AS end,
             rd.secuencia AS sectors,
+            rd.codigo AS codigo,
             rd.intervalos AS frequency
         FROM ronda rd
         JOIN ronda_guardia rg ON rd.codigo = rg.codigo_ronda
