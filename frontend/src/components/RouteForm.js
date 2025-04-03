@@ -12,9 +12,9 @@ import { styles as mobileStyles } from "./RouteForm.styles.mobile";
 const DatePickerWeb = lazy(() =>
     Platform.OS === 'web'
         ? import('react-datepicker').then(module => {
-              import('react-datepicker/dist/react-datepicker.css'); // Import CSS here
-              return { default: module.default };
-          })
+            import('react-datepicker/dist/react-datepicker.css'); // Import CSS here
+            return { default: module.default };
+        })
         : Promise.resolve({ default: null }) // Retorna un componente nulo para otras plataformas
 );
 
@@ -319,7 +319,7 @@ const RouteForm = ({ selectedGuard }) => {
                             <DatePickerWeb
                                 selected={startDate}
                                 onChange={handleWebStartDateChange}
-                                dateFormat="MMMM d, <0xE1><0xB6><0xB5> h:mm aa"
+                                dateFormat="MMMM d, yyyy h:mm aa" // Formato legible: Mes día, año hora:minutos AM/PM
                                 showTimeSelect
                                 timeFormat="HH:mm"
                             />
@@ -351,7 +351,7 @@ const RouteForm = ({ selectedGuard }) => {
                             <DatePickerWeb
                                 selected={endDate}
                                 onChange={handleWebEndDateChange}
-                                dateFormat="MMMM d, <0xE1><0xB6><0xB5> h:mm aa"
+                                dateFormat="MMMM d, yyyy h:mm aa" // Formato legible: Mes día, año hora:minutos AM/PM
                                 showTimeSelect
                                 timeFormat="HH:mm"
                             />
@@ -458,7 +458,7 @@ const mobileNotificationStyles = {
 };
 
 // Aplicar los estilos de error a los estilos existentes
-const styles = Platform.OS === 'web' ? webStyles : mobileStyles;
+const styles = Platform.OS ==='web' ? webStyles : mobileStyles;
 if (styles) {
     styles.errorText = errorTextStyle;
 }

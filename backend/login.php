@@ -102,7 +102,7 @@ function login() {
                     return;
                 } else {
                     error_log("login.php: Invalid credentials (SHA256 hash mismatch)");
-                    echo json_encode(["message" => "Credenciales incorrectas"]);
+                    echo json_encode(["message" => "Incorrect credentials"]);
                     return;
                 }
             } else {
@@ -118,13 +118,13 @@ function login() {
                     return;
                 } else {
                     error_log("login.php: Invalid credentials (plain text mismatch)");
-                    echo json_encode(["message" => "Credenciales incorrectas"]);
+                    echo json_encode(["message" => "Incorrect credentials"]);
                     return;
                 }
             }
         } else {
             error_log("login.php: User not found");
-            echo json_encode(["message" => "Credenciales incorrectas"]);
+            echo json_encode(["message" => "Incorrect credentials"]);
             return;
         }
     } catch (PDOException $e) {
