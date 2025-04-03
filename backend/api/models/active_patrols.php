@@ -33,7 +33,7 @@ function getRouteSchedule() {
         JOIN ronda_guardia rg ON rd.codigo = rg.codigo_ronda
         JOIN guardia_seguridad gs ON rg.id_guardia = gs.ID
         WHERE rd.estado = 1
-        ORDER BY rd.codigo ASC");
+        ORDER BY rd.codigo DESC");
         
         $stmt->execute();
         $route_schedule = $stmt->fetchAll(PDO::FETCH_ASSOC);
