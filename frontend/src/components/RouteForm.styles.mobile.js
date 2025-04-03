@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
 
   },
   checkboxChecked: {
-    backgroundColor: "#e6ddcc",
+    backgroundColor: "#A5D6A7",
   },
   checkboxNumber: {
     fontSize: 7, // Reducir el tamaño
