@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "c4548a10-1764-49c1-beee-32c1b54a1285"
+      }
+    },
+    "owner": "zmanuos",
+    "android": {
+      "package": "com.zmanuos.frontend"
+    },
+    "slug": "artemis"
+  }
+}

@@ -1,28 +1,37 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Artemis",
+    "slug": "artemis",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src/assets/images/icon.png",
+    "icon": "./src/assets/images/artemis_icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./src/assets/images/splash-icon.png",
+      "image": "./src/assets/images/as.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#fbf7ec"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zmanuos.artemis"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./src/assets/images/artemis_icon.png",
+        "backgroundColor": "#fbf7ec"
+      },
+      "package": "com.zmanuos.artemis",
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./src/assets/images/favicon.png"
-    }
+      "favicon": "./src/assets/images/artemis_icon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c4548a10-1764-49c1-beee-32c1b54a1285"
+      }
+    },
+    "owner": "zmanuos"
   }
 }
