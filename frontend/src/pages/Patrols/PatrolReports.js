@@ -13,24 +13,24 @@ const PatrolReports = () => {
     const [patrolReportsData, setPatrolReportsData] = useState([]);
 
     useEffect(() => {
-        // Obtener los datos de la API cuando el componente se monte
         const fetchPatrolReports = async () => {
             const data = await getPatrolReports();
             if (data) {
-                // Formatear las fechas antes de guardarlas en el estado
                 const formattedData = data.map((report) => {
                     return {
                         ...report,
-                        // Suponiendo que la fecha es un campo llamado "DATE"
                         DATE: moment(report.DATE).format("DD/MM/YYYY"),
+                        codigo: report.codigo, // Asumiendo que el identificador único en la API se llama "ID"
+                        // Si el identificador único se llama "codigo" en la API, usa:
+                        // codigo: report.codigo,
                     };
                 });
-                setPatrolReportsData(formattedData); // Guardar los datos formateados en el estado
+                setPatrolReportsData(formattedData);
             }
         };
 
         fetchPatrolReports();
-    }, []); // Solo se ejecuta una vez cuando el componente se monta
+    }, []);
 
     const panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -66,7 +66,7 @@ const PatrolReports = () => {
                     data={patrolReportsData} // Pasando los datos obtenidos
                     navigation={navigation}
                     navigateTo="ReportDetails"
-                    idKey="ID"
+                    // idKey="id" // Elimina esta línea
                 />
             </View>
         </View>

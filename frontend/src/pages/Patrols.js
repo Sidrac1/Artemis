@@ -9,6 +9,7 @@ import ActivePatrols from "./Patrols/ActivePatrols";
 import PatrolReports from "./Patrols/PatrolReports";
 import CreateRoute from "./Patrols/CreateRoute";
 import ReportDetails from "./Patrols/ReportDetails";
+import ActivePatrolsDetails from "./Patrols/ActivePatrolsDetails";
 
 const Stack = createStackNavigator();
 
@@ -88,6 +89,8 @@ const Patrols = () => (
         <Stack.Screen name="PatrolReports" component={PatrolReports} />
         <Stack.Screen name="CreateRoute" component={CreateRoute} />
         <Stack.Screen name="ReportDetails" component={ReportDetails} />
+        <Stack.Screen name="ActivePatrolsDetails" component={ActivePatrolsDetails} />
+
     </Stack.Navigator>
 );
 

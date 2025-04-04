@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getApiUrl } from '../../api/Config';
 import HeaderTitleBoxID from '../../components/HeaderTitleBoxIDS';
 
-const ReportDetails = () => {
+const ActivePatrolsDetails = () => {
     const route = useRoute();
     const navigation = useNavigation();
     const { id } = route.params;
@@ -34,7 +34,7 @@ const ReportDetails = () => {
     const fetchRondaDetails = async (useAllRondas = false) => {
         setLoading(true);
         setError(null);
-        const endpoint = useAllRondas ? 'get_all_active_patrols' : 'active_patrols';
+        const endpoint = useAllRondas ? 'get_all_active_patrols' : 'active_patrols_details';
 
         try {
             const rondaResponse = await fetch(getApiUrl(endpoint));
@@ -529,4 +529,4 @@ const webStyles = StyleSheet.create({
     },
 });
 
-export default ReportDetails;
+export default ActivePatrolsDetails;

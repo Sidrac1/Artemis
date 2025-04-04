@@ -9,9 +9,12 @@ const isMobile = Platform.OS !== 'web';
 const ActivePatrolCard = ({ patrolData }) => {
     const navigation = useNavigation();
     const formattedSectors = patrolData.sectors.split(' ').join(' -> ');
+    const frequencyText = patrolData.frequency !== undefined && patrolData.frequency !== null
+        ? `${String(patrolData.frequency)} Minutes`
+        : '';
 
     const handleCardPress = () => {
-        navigation.navigate('ReportDetails', { id: patrolData.codigo });
+        navigation.navigate('ActivePatrolsDetails', { id: patrolData.codigo });
     };
 
     return (
@@ -74,7 +77,7 @@ const ActivePatrolCard = ({ patrolData }) => {
                             <Text style={isMobile ? mobileStyles.fieldText : styles.fieldText}>FREQUENCY</Text>
                             <TextInput
                                 style={isMobile ? mobileStyles.input : styles.input}
-                                value={patrolData.frequency}
+                                value={frequencyText}
                                 editable={false}
                             />
                         </View>

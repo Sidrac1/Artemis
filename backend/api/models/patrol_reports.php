@@ -24,7 +24,7 @@ function getPatrolReports() {
     // Consulta SQL para obtener los reportes de patrullas con los campos renombrados
     $stmt = $pdo->query("
         SELECT 
-            codigo AS ID,
+            codigo AS codigo,
             nombre AS NAME,
             hora_inicio AS DATE
         FROM ronda

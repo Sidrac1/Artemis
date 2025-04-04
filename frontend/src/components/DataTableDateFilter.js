@@ -63,7 +63,11 @@ const DataTableDateFilter = ({ data, navigation, navigateTo }) => {
                     </Text>
                 ))}
                 {headers.length > 0 && (
-                    <TouchableOpacity style={[styles.moreButton, { width: 100 }]} onPress={() => navigation.navigate(navigateTo, item)}>
+                    // Versión Web (renderItemWeb)
+                    <TouchableOpacity style={[styles.moreButton, { width: 100 }]} onPress={() => {
+                        console.log("ID being passed (Web):", item.codigo); // <--- LOG AÑADIDO AQUÍ (WEB)
+                        navigation.navigate(navigateTo, { id: item.codigo });
+                    }}>
                         <Text style={[styles.moreButtonText, { fontSize: 13 }]}>More</Text>
                     </TouchableOpacity>
                 )}
@@ -79,7 +83,10 @@ const DataTableDateFilter = ({ data, navigation, navigateTo }) => {
                     <Text style={mobileStyles.cardValue}>{item[header]}</Text>
                 </View>
             ))}
-            <TouchableOpacity style={mobileStyles.moreButton} onPress={() => navigation.navigate(navigateTo, item)}>
+            <TouchableOpacity style={mobileStyles.moreButton} onPress={() => {
+                console.log("ID being passed (Mobile):", item.codigo); // <--- LOG AÑADIDO AQUÍ (MOBILE)
+                navigation.navigate(navigateTo, { id: item.codigo });
+            }}>
                 <Text style={mobileStyles.moreButtonText}>Details</Text>
             </TouchableOpacity>
         </View>
@@ -204,9 +211,9 @@ const styles = StyleSheet.create({
     filterContainer: {
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        marginBottom: 10, // Menos margen inferior
-        paddingHorizontal: 0, // Menos padding horizontal
-        width: '100%', // Ocupa todo el ancho del contentWrapper
+        marginBottom: 10,
+        paddingHorizontal: 0,
+        width: '100%',
     },
     filterGroup: {
         flexDirection: 'row',
@@ -251,7 +258,7 @@ const styles = StyleSheet.create({
         padding: 10,
         borderWidth: 1,
         borderColor: 'black',
-        width: '100%', // Ocupa todo el ancho del contentWrapper
+        width: '100%',
     },
     tableContainer: {
         backgroundColor: "#f9f9f9",
@@ -261,7 +268,7 @@ const styles = StyleSheet.create({
         padding: 8,
         overflowY: 'auto',
         maxHeight: windowHeight * 0.4,
-        width: '100%', // Ocupa todo el ancho del outerContainer
+        width: '100%',
     },
     headerRow: {
         flexDirection: 'row',
@@ -418,19 +425,19 @@ const mobileStyles = StyleSheet.create({
 const webStyles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'flex-start', // Cambiado a flex-start
+        justifyContent: 'flex-start',
         alignItems: 'center',
-        paddingTop: 10, // Menos padding superior
+        paddingTop: 10,
         paddingHorizontal: 20,
-        backgroundColor: '#f5f5f5', // Un fondo ligero para la página web
+        backgroundColor: '#f5f5f5',
     },
     contentWrapper: {
-        width: '80%', // Ajusta el ancho del contenido según sea necesario
-        maxWidth: 1000, // O un valor máximo
-        alignItems: 'flex-start', // Alinea los elementos hijos a la izquierda
+        width: '80%',
+        maxWidth: 1000,
+        alignItems: 'flex-start',
     },
     filterContainer: {
-        marginBottom: 10, // Menos margen inferior
+        marginBottom: 10,
     },
     filterGroup: {
         flexDirection: 'row',
