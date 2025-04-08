@@ -1,0 +1,62 @@
+[
+    {
+        "timestamp": "2025-04-08 08:38:43",
+        "level": "info",
+        "message": "Procesando notificación ID: 5 (Envío a todos)"
+    },
+    {
+        "timestamp": "2025-04-08 08:38:43",
+        "level": "info",
+        "message": "Enviando notificación ID 5 a 1 usuarios."
+    },
+    {
+        "timestamp": "2025-04-08 08:38:44",
+        "level": "info",
+        "message": "Notificación ID 5 enviada a todos. Respuesta parcial: [{\"status\":\"ok\",\"id\":\"0196141f-659e-7037-9e67-11a6012406e1\"}]"
+    },
+    {
+        "timestamp": "2025-04-08 08:38:44",
+        "level": "info",
+        "message": "Notificación ID 5 marcada como enviada en BD."
+    },
+    {
+        "timestamp": "2025-04-08 08:48:40",
+        "level": "info",
+        "message": "Procesando notificación ID: 6 (Envío a todos)"
+    },
+    {
+        "timestamp": "2025-04-08 08:48:40",
+        "level": "info",
+        "message": "Enviando notificación ID 6 a 1 usuarios."
+    },
+    {
+        "timestamp": "2025-04-08 08:48:40",
+        "level": "info",
+        "message": "Notificación ID 6 enviada a todos. Respuesta parcial: [{\"status\":\"ok\",\"id\":\"01961428-7f67-7564-aba9-b96bbb97e0be\"}]"
+    },
+    {
+        "timestamp": "2025-04-08 08:48:40",
+        "level": "info",
+        "message": "Notificación ID 6 marcada como enviada en BD."
+    },
+    {
+        "timestamp": "2025-04-08 08:51:02",
+        "level": "info",
+        "message": "Procesando notificación ID: 7 (Envío a todos)"
+    },
+    {
+        "timestamp": "2025-04-08 08:51:02",
+        "level": "info",
+        "message": "Enviando notificación ID 7 a 1 usuarios."
+    },
+    {
+        "timestamp": "2025-04-08 08:51:02",
+        "level": "info",
+        "message": "Notificación ID 7 enviada a todos. Respuesta parcial: [{\"status\":\"ok\",\"id\":\"0196142a-aa4b-7c39-8914-174f24d0ce1c\"}]"
+    },
+    {
+        "timestamp": "2025-04-08 08:51:02",
+        "level": "info",
+        "message": "Notificación ID 7 marcada como enviada en BD."
+    }
+]

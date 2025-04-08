@@ -1,0 +1,30 @@
+[2025-04-08 08:35:28] Conexión a la base de datos establecida correctamente.
+[2025-04-08 08:35:28] Datos recibidos: {"id_empleado":224,"token":"ExponentPushToken[kt-7N1FTdlNNo3C1gky9FQ]"}
+[2025-04-08 08:35:28] Consulta SQL: UPDATE login SET push_token = :push_token WHERE id_empleado = :id_empleado
+[2025-04-08 08:35:28] Valores vinculados => id_empleado: 224, push_token: ExponentPushToken[kt-7N1FTdlNNo3C1gky9FQ]
+[2025-04-08 08:35:28] Consulta ejecutada correctamente.
+[2025-04-08 08:35:28] Token guardado para id_empleado: 224
+[2025-04-08 08:37:19] Conexión a la base de datos establecida correctamente.
+[2025-04-08 08:37:19] Datos recibidos: {"id_empleado":224,"token":"ExponentPushToken[kt-7N1FTdlNNo3C1gky9FQ]"}
+[2025-04-08 08:37:19] Consulta SQL: UPDATE login SET push_token = :push_token WHERE id_empleado = :id_empleado
+[2025-04-08 08:37:19] Valores vinculados => id_empleado: 224, push_token: ExponentPushToken[kt-7N1FTdlNNo3C1gky9FQ]
+[2025-04-08 08:37:19] Consulta ejecutada correctamente.
+[2025-04-08 08:37:19] El token ya estaba registrado para id_empleado: 224
+[2025-04-08 08:46:59] Conexión a la base de datos establecida correctamente.
+[2025-04-08 08:46:59] Datos recibidos: {"id_empleado":224,"token":"ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]"}
+[2025-04-08 08:46:59] Consulta SQL: UPDATE login SET push_token = :push_token WHERE id_empleado = :id_empleado
+[2025-04-08 08:46:59] Valores vinculados => id_empleado: 224, push_token: ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]
+[2025-04-08 08:46:59] Consulta ejecutada correctamente.
+[2025-04-08 08:46:59] Token guardado para id_empleado: 224
+[2025-04-08 08:53:25] Conexión a la base de datos establecida correctamente.
+[2025-04-08 08:53:25] Datos recibidos: {"id_empleado":224,"token":"ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]"}
+[2025-04-08 08:53:25] Consulta SQL: UPDATE login SET push_token = :push_token WHERE id_empleado = :id_empleado
+[2025-04-08 08:53:25] Valores vinculados => id_empleado: 224, push_token: ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]
+[2025-04-08 08:53:25] Consulta ejecutada correctamente.
+[2025-04-08 08:53:25] El token ya estaba registrado para id_empleado: 224
+[2025-04-08 08:54:17] Conexión a la base de datos establecida correctamente.
+[2025-04-08 08:54:17] Datos recibidos: {"id_empleado":224,"token":"ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]"}
+[2025-04-08 08:54:17] Consulta SQL: UPDATE login SET push_token = :push_token WHERE id_empleado = :id_empleado
+[2025-04-08 08:54:17] Valores vinculados => id_empleado: 224, push_token: ExponentPushToken[Pu1_ovJQ7Xi6_bXysjKZu-]
+[2025-04-08 08:54:17] Consulta ejecutada correctamente.
+[2025-04-08 08:54:17] El token ya estaba registrado para id_empleado: 224
