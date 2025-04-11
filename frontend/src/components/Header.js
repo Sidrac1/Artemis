@@ -42,6 +42,14 @@ const Header = () => {
         {Platform.OS !== "web" && <Icon name="cogs" size={18} color="#62605c" />}
         <Text style={styles.buttonTextMobile}>Settings</Text>
       </Pressable>
+
+
+      <Pressable style={[styles.menuItem, getActiveStyle("Crimes")]} onPress={() => navigation.navigate("Crimes")}>
+        {Platform.OS !== "web" && <Icon name="cogs" size={20} color="#62605c" />}
+        <Text style={styles.buttonText}>Crimes</Text>
+      </Pressable>
+
+  
     </View>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions } from 'react-native';
 import misDatos from '../components/delitos';
 
 import FiltersSection from "../Crimes/FilersSection";
@@ -13,7 +13,7 @@ import GlosarioTerminos from "../Crimes/Glosario";
 import CompararEstados from '../components/Comparar';
 import jsonData from '../data/delitos.json';
 
-
+const { height: screenHeight } = Dimensions.get('window');
 
 const Crimes = () => {
   // Estados para control de UI
@@ -22,14 +22,14 @@ const Crimes = () => {
   const [pageSize] = useState(20);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState(null);
-  
+
   // Estados para filtros
   const [selectedJuridical, setSelectedJuridical] = useState("");
   const [selectedCrimeType, setSelectedCrimeType] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [selectedModality, setSelectedModality] = useState("");
-  
+
   // Estados para opciones de filtros
   const [uniqueJuridicalGoods, setUniqueJuridicalGoods] = useState([]);
   const [uniqueCrimeTypes, setUniqueCrimeTypes] = useState([]);
@@ -43,37 +43,30 @@ const Crimes = () => {
   const [isFilterApplied, setIsFilterApplied] = useState(false);
   const [crimeDataByState, setCrimeDataByState] = useState({});
 
-  // Cargar opciones de filtro y calcular estadísticas
   useEffect(() => {
-    // Extraer valores únicos para los filtros
     const juridicalGoods = [...new Set(misDatos.map(item => item["Bien jurídico afectado"]))];
     const crimeTypes = [...new Set(misDatos.map(item => item["Tipo de delito"]))];
     const states = [...new Set(misDatos.map(item => item["Entidad"]))];
     const modalities = [...new Set(misDatos.map(item=>item["Modalidad"]))]
-    
 
     setUniqueJuridicalGoods(juridicalGoods);
     setUniqueCrimeTypes(crimeTypes);
     setUniqueStates(states);
     setUniqueModalities(modalities);
 
-    // Calcular estadísticas de crímenes
     const { crimesByState, highestCrimesData } = calculateCrimeStatistics(misDatos);
     setCrimeDataByState(crimesByState);
     setHighestCrimes(highestCrimesData);
   }, []);
 
-  // Función para cargar datos con filtros y paginación
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const { filteredData } = applyFilters();
-      
-      // Aplicar paginación
       const startIndex = page * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedData = filteredData.slice(startIndex, endIndex);
-      
+
       setDisplayData(paginatedData);
       setTotalRecords(filteredData.length);
       setLoading(false);
@@ -83,59 +76,41 @@ const Crimes = () => {
     }
   }, [page, pageSize, selectedJuridical, selectedCrimeType, selectedState, selectedPeriod,selectedModality, isFilterApplied]);
 
-  // Aplicar filtros a los datos
   const applyFilters = useCallback(() => {
     let filteredData = [...misDatos];
-    
-    if (selectedJuridical) {
-      filteredData = filteredData.filter(item => item["Bien jurídico afectado"] === selectedJuridical);
-    }
-    
-    if (selectedCrimeType) {
-      filteredData = filteredData.filter(item => item["Tipo de delito"] === selectedCrimeType);
-    }
-    
-    if (selectedState) {
-      filteredData = filteredData.filter(item => item["Entidad"] === selectedState);
-    }
-    
-    if (selectedPeriod !== "all") {
-      filteredData = filteredData.filter(item => parseInt(item[selectedPeriod] || "0") > 0);
-    }
-    if (selectedModality){
-      filteredData = filteredData.filter(item=>item["Modalidad"] === selectedModality);
-    }
-    
+
+    if (selectedJuridical) filteredData = filteredData.filter(item => item["Bien jurídico afectado"] === selectedJuridical);
+    if (selectedCrimeType) filteredData = filteredData.filter(item => item["Tipo de delito"] === selectedCrimeType);
+    if (selectedState) filteredData = filteredData.filter(item => item["Entidad"] === selectedState);
+    if (selectedPeriod !== "all") filteredData = filteredData.filter(item => parseInt(item[selectedPeriod] || "0") > 0);
+    if (selectedModality) filteredData = filteredData.filter(item=>item["Modalidad"] === selectedModality);
+
     return { filteredData };
   }, [selectedJuridical, selectedCrimeType, selectedState, selectedPeriod, selectedModality]);
 
-  // Cargar datos cuando cambia la página o los filtros
   useEffect(() => {
     loadData();
   }, [loadData, page]);
 
-  // Función para aplicar filtros
   const aplicarFiltros = useCallback(() => {
     setPage(0);
     setIsFilterApplied(!isFilterApplied);
   }, [isFilterApplied]);
 
-  // Manejar paginación
   const irPaginaSiguiente = () => setPage(prev => prev + 1);
   const irPaginaAnterior = () => setPage(prev => Math.max(0, prev - 1));
 
-  // Función para abrir el modal con la información del estado seleccionado
   const handlePressEstado = (estado) => {
     setSelectedEstado(estado);
     setModalVisible(true);
   };
 
   return (
-    <ScrollView style={styles.mainContainer}>
+    <ScrollView style={styles.mainContainer} contentContainerStyle={styles.contentContainer}>
       <View style={styles.container}>
         <TitleSection />
-        
-        <FiltersSection 
+
+        <FiltersSection
           selectedJuridical={selectedJuridical}
           setSelectedJuridical={setSelectedJuridical}
           selectedCrimeType={selectedCrimeType}
@@ -153,7 +128,7 @@ const Crimes = () => {
           aplicarFiltros={aplicarFiltros}
         />
 
-        <ResultsSection 
+        <ResultsSection
           loading={loading}
           displayData={displayData}
           totalRecords={totalRecords}
@@ -164,14 +139,14 @@ const Crimes = () => {
         />
 
         <View style={styles.statsContainer}>
-          <HighestCrimesSection 
-            highestCrimes={highestCrimes} 
-            handlePressEstado={handlePressEstado} 
+          <HighestCrimesSection
+            highestCrimes={highestCrimes}
+            handlePressEstado={handlePressEstado}
           />
-          
-          <LowestCrimesSection 
-            crimeDataByState={crimeDataByState} 
-            handlePressEstado={handlePressEstado} 
+
+          <LowestCrimesSection
+            crimeDataByState={crimeDataByState}
+            handlePressEstado={handlePressEstado}
           />
 
           <CompararEstados data={jsonData} />
@@ -186,20 +161,20 @@ const Crimes = () => {
           crimeDataByState={crimeDataByState}
           crimeData={misDatos}
         />
+        <GlosarioTerminos datosDelitos={misDatos} />
       </View>
-
-      <ScrollView>
-      <GlosarioTerminos datosDelitos={misDatos} />
-      </ScrollView>
     </ScrollView>
-    
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  contentContainer: {
+    flexGrow: 1,
+    minHeight: screenHeight, // Intenta establecer la altura mínima de la pantalla
   },
   container: {
     padding: 16,
@@ -210,6 +185,6 @@ const styles = {
     justifyContent: 'space-between',
     flexWrap: 'wrap',
   }
-};
+});
 
 export default Crimes;
