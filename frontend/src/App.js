@@ -10,9 +10,12 @@ import Settings from "./pages/Settings";
 import VerifyOTP from "./VerifyOTP"; // Importa VerifyOTP
 import LoginScreen from "./LoginScreen";
 import RequestOTP from "./RequestOTP"; // Importa RequestOTP
-import ResetPassword from "./ResetPassword"; // Importa VerifyOTP
+import ResetPassword from "./ResetPassword"; // Importa 
+import { Platform } from "react-native";
 import { SafeAreaView, View } from "react-native";
 import { AuthProvider } from "./AuthContext"; // Importa el AuthProvider
+import Crimes from "./pages/Crimes";
+
 
 const Stack = createStackNavigator();
 
@@ -31,6 +34,9 @@ const App = () => {
                     <Stack.Screen name="RequestOTP" component={RequestOTP} options={{ title: 'Recuperar Contraseña', headerShown: true }} />
                     <Stack.Screen name="VerifyOTP" component={VerifyOTP} options={{ title: 'Verificar Código', headerShown: true }} />
                     <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ title: 'Reset Password', headerShown: true }} />
+                    {Platform.OS === "web" && (
+            <Stack.Screen name="Crimes" component={Crimes} />
+            )}
                 </Stack.Navigator>
             </NavigationContainer>
         </AuthProvider>
